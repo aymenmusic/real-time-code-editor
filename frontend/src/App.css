@@ -1,0 +1,598 @@
+/* Let's use native CSS to torture ourselves! */
+:root {
+  /* Light mode colors */
+  --primary-color: #2563eb;
+  --secondary-color: #4b5563;
+  --background-color: #f8fafc;
+  --editor-bg: #1e1e1e;
+  --sidebar-bg: #f1f5f9;
+  --header-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-color: #1e293b;
+  --text-light: #64748b;
+  --success-color: #10b981;
+  --error-color: #ef4444;
+  --warning-color: #f59e0b;
+  --chat-bg: #ffffff;
+  --input-bg: #ffffff;
+}
+
+.dark-mode {
+  /* Dark mode colors */
+  --background-color: #0f172a;
+  --sidebar-bg: #1e293b;
+  --header-bg: #1e293b;
+  --border-color: #334155;
+  --text-color: #f1f5f9;
+  --text-light: #cbd5e1;
+  --chat-bg: #1e293b;
+  --input-bg: #334155;
+}
+
+/* Fix for language selector in dark mode */
+.dark-mode .language-selector select {
+  background-color: #334155;
+  color: #f1f5f9;
+  border-color: #475569;
+}
+
+.dark-mode .language-selector option {
+  background-color: #1e293b;
+  color: #f1f5f9;
+}
+
+/* Fix for headings in dark mode */
+.dark-mode .user-presence h3,
+.dark-mode .chat-header h3 {
+  color: #f1f5f9;
+}
+
+/* Fix for user names in dark mode */
+.dark-mode .user-name {
+  color: #f1f5f9;
+}
+
+/* Fix for no users/messages text in dark mode */
+.dark-mode .no-users,
+.dark-mode .no-messages {
+  color: #94a3b8;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  line-height: 1.5;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Editor Page Layout */
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+}
+
+/* Editor Main Layout */
+.editor-main {
+  display: flex;
+  flex-direction: column;
+  flex: 3;
+  overflow: hidden;
+}
+
+.editor-panel {
+  flex: 2;
+  min-height: 60%;
+  overflow: hidden;
+}
+
+.terminal-panel {
+  flex: 1;
+  min-height: 20%;
+  max-height: 40%;
+  border-top: 1px solid var(--border-color);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.made-by {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-color);
+  margin-right: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+.dark-mode .made-by {
+  color: var(--text-light);
+}
+
+.editor-header h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.editor-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+
+.editor-sidebar {
+  flex: 1; /* Take up 1/4 of the available space */
+  max-width: 350px;
+  min-width: 300px;
+  background-color: var(--sidebar-bg);
+  border-left: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Code Editor */
+.code-editor-container {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Editor Actions */
+.editor-actions {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+}
+
+.run-button {
+  padding: 0.5rem 1.5rem;
+  background-color: var(--success-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: 100%;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.run-button:hover {
+  background-color: #0ca678;
+}
+
+.run-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.run-button:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.run-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.run-button.running {
+  background-color: var(--warning-color);
+}
+
+/* Terminal */
+.terminal-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  background-color: #1e1e1e;
+  color: #f8f8f8;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #333;
+  border-bottom: 1px solid #444;
+}
+
+.terminal-header h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #f8f8f8;
+}
+
+.executing-indicator {
+  font-size: 0.75rem;
+  color: var(--warning-color);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.terminal-output {
+  flex: 1;
+  padding: 0.75rem;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.terminal-placeholder {
+  color: #888;
+  font-style: italic;
+  margin-top: 1rem;
+  text-align: center;
+}
+
+.terminal-line {
+  padding: 0.125rem 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.terminal-errors {
+  margin-bottom: 1rem;
+  border-left: 3px solid var(--error-color);
+  padding-left: 0.5rem;
+}
+
+.terminal-error {
+  color: var(--error-color);
+  padding: 0.125rem 0;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-weight: 500;
+}
+
+/* Language Selector */
+.language-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.language-selector label {
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.language-selector select {
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+  background-color: white;
+  color: var(--text-color);
+  font-size: 0.875rem;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+
+.language-selector select:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.language-selector option {
+  color: var(--text-color);
+  background-color: white;
+}
+
+/* Dark Mode Toggle */
+.dark-mode-toggle {
+  position: relative;
+  width: 50px;
+  height: 24px;
+  border-radius: 12px;
+  background-color: #e2e8f0;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  border: none;
+  padding: 0;
+  overflow: hidden;
+  outline: none; /* Remove outline on focus */
+  -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+  user-select: none; /* Prevent text selection */
+}
+
+/* Remove focus styles */
+.dark-mode-toggle:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Remove active/pressed styles */
+.dark-mode-toggle:active {
+  outline: none;
+  box-shadow: none;
+}
+
+.dark-mode .dark-mode-toggle {
+  background-color: #3b82f6;
+}
+
+.dark-mode-toggle::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: white;
+  transition: transform 0.3s ease;
+  z-index: 2;
+}
+
+.dark-mode .dark-mode-toggle::before {
+  transform: translateX(26px);
+}
+
+.dark-mode-toggle svg {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 14px;
+  height: 14px;
+  transition: opacity 0.3s;
+}
+
+.dark-mode-toggle svg:first-of-type {
+  left: 7px;
+  color: #f59e0b;
+  opacity: 1;
+}
+
+.dark-mode-toggle svg:last-of-type {
+  right: 7px;
+  color: #f1f5f9;
+  opacity: 0;
+}
+
+.dark-mode .dark-mode-toggle svg:first-of-type {
+  opacity: 0;
+}
+
+.dark-mode .dark-mode-toggle svg:last-of-type {
+  opacity: 1;
+}
+
+/* Connection Status */
+.connection-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text-light);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-indicator.connected {
+  background-color: var(--success-color);
+}
+
+.status-indicator.disconnected {
+  background-color: var(--error-color);
+}
+
+/* User Presence */
+.user-presence {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.user-presence h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.user-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.user-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.user-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.user-name {
+  font-size: 0.875rem;
+}
+
+.no-users {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  font-style: italic;
+}
+
+/* Chat */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.chat-header {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header h3 {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-width: 85%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--chat-bg);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.message.own-message {
+  align-self: flex-end;
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.message-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+  gap: 0.75rem; /* Add spacing between username and timestamp */
+  padding: 0 0.25rem;
+}
+
+.message.own-message .message-header {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message-user {
+  font-weight: 600;
+}
+
+.message-time {
+  color: var(--text-light);
+}
+
+.message.own-message .message-time {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.message-text {
+  font-size: 0.875rem;
+  word-break: break-word;
+}
+
+.no-messages {
+  font-size: 0.875rem;
+  color: var(--text-light);
+  font-style: italic;
+  align-self: center;
+  margin-top: 2rem;
+}
+
+.chat-input {
+  display: flex;
+  padding: 1rem;
+  gap: 0.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-color);
+  font-size: 0.875rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chat-input input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
+}
+
+.chat-input button {
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.chat-input button:hover {
+  background-color: #1d4ed8;
+}
+
+.chat-input button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.chat-input button:active {
+  outline: none;
+  box-shadow: none;
+}
