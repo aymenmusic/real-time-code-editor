@@ -86,6 +86,16 @@
   color: white;
 }
 
+.editor-link {
+  color: var(--text-color);
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.editor-link:hover {
+  color: #ef4444;
+}
+
 .username {
   font-weight: 600;
   color: var(--primary-color);

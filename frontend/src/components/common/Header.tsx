@@ -34,6 +34,11 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                   <span className="nav-link username">
                     {user?.username}
                   </span>
+                  {!isEditorPage && (
+                    <Link to="/editor" className="nav-link editor-link">
+                      Editor
+                    </Link>
+                  )}
                   <button 
                     onClick={handleLogout} 
                     className="nav-link logout-button"
