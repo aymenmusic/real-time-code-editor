@@ -20,12 +20,16 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Real-Time Code Editor API")
 
 # Add CORS middleware to allow requests from the frontend
+# Get allowed origins from environment variables or use a default for development
+allowed_origins = os.getenv(
+    "ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, replace with specific origin
+    allow_origins=allowed_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 # Include routers
@@ -147,20 +151,35 @@ async def websocket_endpoint(websocket: WebSocket):
 
 
 @app.websocket("/ws/auth")
-async def websocket_auth_endpoint(websocket: WebSocket, token: str):
+async def websocket_auth_endpoint(websocket: WebSocket):
     """
     WebSocket endpoint for authenticated users
     """
     user_id = "unknown"  # Default value for error handling
+    authenticated = False
 
     try:
-        print(
-            f"Authenticating WebSocket connection with token: {token[:10]}...")
+        # Accept the connection first
+        await websocket.accept()
+        print("WebSocket connection accepted, waiting for authentication...")
+
+        # Wait for the authentication message
+        auth_data = await websocket.receive_text()
+        auth_message = json.loads(auth_data)
+
+        if auth_message["type"] != "authenticate" or "token" not in auth_message:
+            print("Invalid authentication message")
+            await websocket.close(code=1008, reason="Invalid authentication")
+            return
+
+        token = auth_message["token"]
+        print("Received authentication token")
 
         # Verify the token and get the user
         current_user = await get_current_user(token)
         user_id = str(current_user.id)
         username = current_user.username
+        authenticated = True
 
         print(f"Authenticated user: {user_id} ({username})")
 

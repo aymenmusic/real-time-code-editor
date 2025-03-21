@@ -34,7 +34,8 @@ class WebSocketService {
 
   // Connect with authentication
   private connectWithAuth(token: string) {
-    const url = `${WS_URL}/ws/auth?token=${token}`;
+    // Connect to the auth endpoint without sending the token in the URL
+    const url = `${WS_URL}/ws/auth`;
     console.log(`Connecting to WebSocket with auth at: ${url}`);
     
     try {
@@ -43,6 +44,19 @@ class WebSocketService {
       
       // Set up event handlers with fallback to anonymous connection
       this.setupEventHandlers(true);
+      
+      // Send the token as the first message after connection is established
+      this.socket.addEventListener('open', () => {
+        if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+          // Send authentication message
+          const authMessage = {
+            type: 'authenticate',
+            token: token
+          };
+          this.socket.send(JSON.stringify(authMessage));
+          console.log('Authentication token sent via message');
+        }
+      });
     } catch (error) {
       console.error('Error creating authenticated WebSocket connection:', error);
       // Fall back to anonymous connection

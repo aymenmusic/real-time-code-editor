@@ -36,6 +36,7 @@
   font-size: 1.25rem;
   color: var(--text-light);
   max-width: 600px;
+  margin: 0 auto; /* Center the subtitle */
 }
 
 .landing-features {
