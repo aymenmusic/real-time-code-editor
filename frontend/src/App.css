@@ -58,6 +58,21 @@
   color: #94a3b8;
 }
 
+/* Fix for message text in dark mode */
+.dark-mode .message {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+.dark-mode .message-text {
+  color: #f1f5f9;
+}
+
+.dark-mode .message.own-message {
+  background-color: #3b82f6;
+  color: white;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -511,7 +526,7 @@ body {
   align-items: center;
   font-size: 0.75rem;
   gap: 0.75rem; /* Add spacing between username and timestamp */
-  padding: 0 0.25rem;
+  /* Remove padding to align with message content */
 }
 
 .message.own-message .message-header {
@@ -568,6 +583,34 @@ body {
   box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.1);
 }
 
+/* Override browser autofill styling for chat input */
+.chat-input input:-webkit-autofill,
+.chat-input input:-webkit-autofill:hover,
+.chat-input input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  -webkit-text-fill-color: var(--text-color) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* For Firefox */
+.chat-input input:autofill {
+  background-color: var(--input-bg) !important;
+  color: var(--text-color) !important;
+}
+
+/* Dark mode autofill overrides for chat input */
+.dark-mode .chat-input input:-webkit-autofill,
+.dark-mode .chat-input input:-webkit-autofill:hover,
+.dark-mode .chat-input input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 30px var(--input-bg) inset !important;
+  -webkit-text-fill-color: var(--text-color) !important;
+}
+
+.dark-mode .chat-input input:autofill {
+  background-color: var(--input-bg) !important;
+  color: var(--text-color) !important;
+}
+
 .chat-input button {
   padding: 0.5rem 1rem;
   background-color: var(--primary-color);
@@ -595,4 +638,41 @@ body {
 .chat-input button:active {
   outline: none;
   box-shadow: none;
+}
+
+/* Chat authentication message */
+.chat-auth-message {
+  padding: 1rem;
+  border-top: 1px solid var(--border-color);
+  text-align: center;
+  background-color: var(--input-bg);
+}
+
+.chat-auth-message p {
+  font-size: 0.875rem;
+  color: var(--text-color);
+}
+
+.chat-auth-message a {
+  color: var(--primary-color);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.chat-auth-message a:hover {
+  text-decoration: underline;
+}
+
+/* Dark mode styles for chat auth message */
+.dark-mode .chat-auth-message {
+  background-color: #334155;
+}
+
+.dark-mode .chat-auth-message p {
+  color: #f1f5f9;
+}
+
+.dark-mode .chat-auth-message a {
+  color: #60a5fa;
 }

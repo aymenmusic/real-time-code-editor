@@ -50,6 +50,9 @@ const Chat = () => {
     });
   };
 
+  // Check if user is authenticated
+  const { isAuthenticated } = useAuthStore();
+
   return (
     <div className="chat-container">
       <div className="chat-header">
@@ -63,7 +66,7 @@ const Chat = () => {
           messages.map((msg) => (
             <div 
               key={msg.id} 
-              className={`message ${msg.userId === 'current-user' ? 'own-message' : ''}`}
+              className={`message ${msg.userId === useAuthStore.getState().user?.id.toString() ? 'own-message' : ''}`}
             >
               <div className="message-header">
                 <span className="message-user">{msg.userName}</span>
@@ -76,15 +79,21 @@ const Chat = () => {
         <div ref={messagesEndRef} />
       </div>
       
-      <form className="chat-input" onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder="Type a message..."
-        />
-        <button type="submit">Send</button>
-      </form>
+      {isAuthenticated ? (
+        <form className="chat-input" onSubmit={handleSendMessage}>
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+          />
+          <button type="submit">Send</button>
+        </form>
+      ) : (
+        <div className="chat-auth-message">
+          <p>Please <a href="/register">sign up</a> or <a href="/login">log in</a> to use the chat feature.</p>
+        </div>
+      )}
     </div>
   );
 };
