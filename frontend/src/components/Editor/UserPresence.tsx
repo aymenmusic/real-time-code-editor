@@ -14,7 +14,7 @@ const UserPresence = () => {
       <h3>Connected Users</h3>
       <div className="user-list">
         {users.length === 0 ? (
-          <div className="no-users">No other users connected</div>
+          <div className="no-users">No users connected</div>
         ) : (
           users.map((user) => (
             <div key={user.id} className="user-item">

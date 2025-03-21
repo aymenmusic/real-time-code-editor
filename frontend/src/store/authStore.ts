@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { useEditorStore } from './editorStore';
 
 interface User {
   id: number;
@@ -115,6 +116,9 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
+        // Clear users list when logging out
+        useEditorStore.getState().setUsers([]);
+        
         set({
           token: null,
           user: null,

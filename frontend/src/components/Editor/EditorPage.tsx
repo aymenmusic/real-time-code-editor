@@ -12,18 +12,23 @@ import { useAuthStore } from '../../store/authStore';
 const EditorPage = () => {
   const { isDarkMode } = useThemeStore();
 
+  // Get authentication state
+  const { isAuthenticated, user } = useAuthStore();
+  
   // Add the current user to the users list
   useEffect(() => {
-    console.log('Adding current user to users list...');
+    console.log('Managing user presence...');
     
-    const { user, isAuthenticated } = useAuthStore.getState();
     const editorStore = useEditorStore.getState();
     
-    // Generate a random color for the user
-    const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#33FFF6', '#F6FF33'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    // Clear existing users first
+    editorStore.setUsers([]);
     
     if (isAuthenticated && user) {
+      // Generate a random color for the user
+      const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#33FFF6', '#F6FF33'];
+      const randomColor = colors[Math.floor(Math.random() * colors.length)];
+      
       // Add the authenticated user
       const currentUser = {
         id: user.id.toString(),
@@ -34,27 +39,19 @@ const EditorPage = () => {
       editorStore.addUser(currentUser);
       console.log(`Added authenticated user: ${currentUser.name}`);
     } else {
-      // Add a guest user
-      const guestId = `guest-${Math.random().toString(36).substring(2, 8)}`;
-      const guestUser = {
-        id: guestId,
-        name: `Guest-${guestId.substring(6)}`,
-        color: randomColor
-      };
-      
-      editorStore.addUser(guestUser);
-      console.log(`Added guest user: ${guestUser.name}`);
+      // No users to add when not authenticated
+      console.log('No authenticated user to add');
     }
     
-    // Set connection status to true
-    editorStore.setIsConnected(true);
+    // Set connection status based on authentication
+    editorStore.setIsConnected(isAuthenticated);
     
     // Cleanup function
     return () => {
       console.log('Cleaning up user presence...');
       editorStore.setIsConnected(false);
     };
-  }, []);
+  }, [isAuthenticated, user]); // Re-run when authentication state changes
   
   // Log code changes (WebSocket functionality removed for now)
   useEffect(() => {
