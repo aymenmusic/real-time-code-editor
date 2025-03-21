@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Depends
+from fastapi import FastAPI, HTTPException, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import subprocess
@@ -11,7 +11,6 @@ from typing import Optional
 from database.database import engine, Base
 from routers import auth
 from models import user
-from websocket import manager
 from auth.utils import get_current_user
 
 # Create database tables
@@ -26,10 +25,11 @@ allowed_origins = os.getenv(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=allowed_origins,
+    allow_origins=["*"],  # Allow all origins for development
     allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
+    expose_headers=["*"],  # Expose all headers
 )
 
 # Include routers
@@ -101,120 +101,4 @@ async def execute_code(execution: CodeExecution):
             os.unlink(temp_filename)
 
 
-# WebSocket endpoints
-class ConnectionData(BaseModel):
-    user_id: str
-    username: str
-    color: str
-
-
-@app.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    """
-    WebSocket endpoint for anonymous users (not authenticated)
-    """
-    # Generate a random user ID for anonymous users
-    user_id = f"anon-{uuid.uuid4()}"
-    username = f"Guest-{user_id[:5]}"
-    color = "#" + uuid.uuid4().hex[:6]  # Random color
-
-    print(f"New anonymous WebSocket connection: {user_id} ({username})")
-
-    try:
-        await manager.connect(websocket, user_id, username, color)
-
-        while True:
-            # Wait for messages from the client
-            data = await websocket.receive_text()
-            print(f"Received message from {user_id}: {data[:100]}...")
-            message_data = json.loads(data)
-
-            # Handle different message types
-            if message_data["type"] == "chat_message":
-                print(
-                    f"Chat message from {user_id}: {message_data['message']}")
-                await manager.broadcast_message(user_id, message_data["message"])
-            elif message_data["type"] == "code_update":
-                print(f"Code update from {user_id}")
-                await manager.broadcast_code_update(user_id, message_data["code"])
-            else:
-                print(
-                    f"Unknown message type from {user_id}: {message_data['type']}")
-    except WebSocketDisconnect:
-        print(f"WebSocket disconnected: {user_id}")
-        manager.disconnect(user_id)
-        await manager.broadcast_users()
-    except Exception as e:
-        print(f"WebSocket error for {user_id}: {e}")
-        manager.disconnect(user_id)
-        await manager.broadcast_users()
-
-
-@app.websocket("/ws/auth")
-async def websocket_auth_endpoint(websocket: WebSocket):
-    """
-    WebSocket endpoint for authenticated users
-    """
-    user_id = "unknown"  # Default value for error handling
-    authenticated = False
-
-    try:
-        # Accept the connection first
-        await websocket.accept()
-        print("WebSocket connection accepted, waiting for authentication...")
-
-        # Wait for the authentication message
-        auth_data = await websocket.receive_text()
-        auth_message = json.loads(auth_data)
-
-        if auth_message["type"] != "authenticate" or "token" not in auth_message:
-            print("Invalid authentication message")
-            await websocket.close(code=1008, reason="Invalid authentication")
-            return
-
-        token = auth_message["token"]
-        print("Received authentication token")
-
-        # Verify the token and get the user
-        current_user = await get_current_user(token)
-        user_id = str(current_user.id)
-        username = current_user.username
-        authenticated = True
-
-        print(f"Authenticated user: {user_id} ({username})")
-
-        # Generate a random color for the user
-        # In a real app, this could be stored in the user profile
-        color = "#" + uuid.uuid4().hex[:6]
-
-        await manager.connect(websocket, user_id, username, color)
-
-        while True:
-            # Wait for messages from the client
-            data = await websocket.receive_text()
-            print(
-                f"Received message from authenticated user {user_id}: {data[:100]}...")
-            message_data = json.loads(data)
-
-            # Handle different message types
-            if message_data["type"] == "chat_message":
-                print(
-                    f"Chat message from authenticated user {user_id}: {message_data['message']}")
-                await manager.broadcast_message(user_id, message_data["message"])
-            elif message_data["type"] == "code_update":
-                print(f"Code update from authenticated user {user_id}")
-                await manager.broadcast_code_update(user_id, message_data["code"])
-            else:
-                print(
-                    f"Unknown message type from authenticated user {user_id}: {message_data['type']}")
-    except WebSocketDisconnect:
-        print(f"Authenticated WebSocket disconnected: {user_id}")
-        manager.disconnect(user_id)
-        await manager.broadcast_users()
-    except Exception as e:
-        print(f"Authenticated WebSocket error for {user_id}: {e}")
-        try:
-            manager.disconnect(user_id)
-            await manager.broadcast_users()
-        except Exception as inner_e:
-            print(f"Error during disconnect cleanup: {inner_e}")
+# Real-time functionality will be implemented in a different way

@@ -53,7 +53,7 @@ const EditorPage = () => {
     };
   }, [isAuthenticated, user]); // Re-run when authentication state changes
   
-  // Log code changes (WebSocket functionality removed for now)
+  // Log code changes
   useEffect(() => {
     console.log('Setting up code change logging...');
     
