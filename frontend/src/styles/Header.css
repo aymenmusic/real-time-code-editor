@@ -23,7 +23,7 @@
 }
 
 .site-logo {
-  height: 65px;
+  height: 50px;
   width: auto;
   object-fit: contain;
   transition: opacity 0.2s;

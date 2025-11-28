@@ -733,3 +733,42 @@ body {
 .dark-mode .chat-auth-message a {
   color: #60a5fa;
 }
+
+/* Responsive Design - Mobile Optimizations */
+@media (max-width: 768px) {
+  /* Hide sidebar on mobile devices */
+  .editor-sidebar {
+    display: none;
+  }
+  
+  /* Make editor main take full width */
+  .editor-main {
+    flex: 1;
+    width: 100%;
+  }
+  
+  /* Adjust editor and terminal heights for mobile */
+  .editor-panel {
+    flex: 2;
+    min-height: 50%;
+  }
+  
+  .terminal-panel {
+    flex: 1;
+    min-height: 30%;
+    max-height: 50%;
+  }
+  
+  /* Make header more compact on mobile */
+  .made-by {
+    display: none;
+  }
+}
+
+/* Tablet optimizations */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .editor-sidebar {
+    min-width: 250px;
+    max-width: 280px;
+  }
+}
