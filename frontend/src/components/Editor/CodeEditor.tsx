@@ -3,6 +3,7 @@ import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
+import { useAuthStore } from '../../store/authStore';
 import { websocketService } from '../../services/websocketService';
 
 interface CodeEditorProps {
@@ -19,6 +20,7 @@ const CodeEditor = ({
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { code, updateCode, setEditor, language: storeLanguage } = useEditorStore();
   const { isDarkMode } = useThemeStore();
+  const { isAuthenticated } = useAuthStore();
   const [isLocalChange, setIsLocalChange] = useState(false);
 
   // Use dark theme when isDarkMode is true, light theme otherwise
@@ -39,9 +41,10 @@ const CodeEditor = ({
     }
   };
 
-  // Debounced WebSocket send - only send code changes after user stops typing
+  // Debounced WebSocket send - only send if authenticated
   useEffect(() => {
-    if (!isLocalChange) {
+    if (!isLocalChange || !isAuthenticated) {
+      setIsLocalChange(false);
       return;
     }
 
@@ -54,7 +57,7 @@ const CodeEditor = ({
     }, 500); // Wait 500ms after user stops typing
 
     return () => clearTimeout(timeoutId);
-  }, [code, isLocalChange]);
+  }, [code, isLocalChange, isAuthenticated]);
 
   // Clean up on unmount
   useEffect(() => {

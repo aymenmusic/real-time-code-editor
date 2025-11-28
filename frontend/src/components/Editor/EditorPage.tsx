@@ -20,6 +20,7 @@ const EditorPage = () => {
   // Connect to WebSocket and handle real-time events
   useEffect(() => {
     if (!isAuthenticated || !user) {
+      console.log('Waiting for authentication... isAuthenticated:', isAuthenticated, 'user:', user);
       return;
     }
 
@@ -28,14 +29,15 @@ const EditorPage = () => {
     const editorStore = useEditorStore.getState();
     const chatStore = useChatStore.getState();
     
-    // Generate a random color for the user
-    const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#33FFF6', '#F6FF33'];
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+    // Assign color from a hardcoded list based on user ID
+    const colors = ['#354889', '#9CC8EA', '#4D9EE8', '#578CD3', '#384B8C'];
+    const colorIndex = parseInt(user.id.toString()) % colors.length;
+    const userColor = colors[colorIndex];
     
     const currentUser = {
       id: user.id.toString(),
       name: user.username,
-      color: randomColor
+      color: userColor
     };
 
     // Set up message handlers BEFORE connecting
