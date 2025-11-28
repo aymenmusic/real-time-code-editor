@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { useEditorStore } from '../../store/editorStore';
 import { useAuthStore } from '../../store/authStore';
+import { websocketService } from '../../services/websocketService';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
@@ -22,22 +23,14 @@ const Chat = () => {
     // Get the current user from auth store
     const { user, isAuthenticated } = useAuthStore.getState();
     
-    // If authenticated, use the real user info
-    // Otherwise, use a placeholder for guest users
-    const currentUser = isAuthenticated && user ? {
-      id: user.id.toString(),
-      name: user.username,
-    } : {
-      id: 'guest-user',
-      name: 'Guest',
-    };
+    if (!isAuthenticated || !user) {
+      console.warn('User must be authenticated to send messages');
+      return;
+    }
     
-    // Add message to local store
-    addMessage({
-      userId: currentUser.id,
-      userName: currentUser.name,
-      text: message,
-    });
+    // Send message via WebSocket
+    // Don't add locally - it will come back via WebSocket broadcast
+    websocketService.sendChatMessage(message);
     
     // Clear the input field
     setMessage('');

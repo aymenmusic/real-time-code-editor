@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import subprocess
@@ -12,6 +12,7 @@ from database.database import engine, Base
 from routers import auth
 from models import user
 from auth.utils import get_current_user
+from websocket_manager import manager
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -101,4 +102,90 @@ async def execute_code(execution: CodeExecution):
             os.unlink(temp_filename)
 
 
-# Real-time functionality will be implemented in a different way
+@app.websocket("/ws/{room_id}")
+async def websocket_endpoint(websocket: WebSocket, room_id: str):
+    """WebSocket endpoint for real-time collaboration"""
+    user_info = None
+
+    try:
+        # Accept connection and wait for initial user info
+        await websocket.accept()
+
+        # Wait for the first message with user info
+        data = await websocket.receive_json()
+
+        if data.get("type") == "init":
+            user_info = data.get("user", {})
+            # Connect to room with user info
+            await manager.connect(websocket, room_id, user_info)
+
+            # Main message loop
+            while True:
+                try:
+                    data = await websocket.receive_json()
+                    message_type = data.get("type")
+
+                    if message_type == "code_change":
+                        # Broadcast code changes to all users in the room
+                        await manager.broadcast_to_room(
+                            room_id,
+                            {
+                                "type": "code_change",
+                                "code": data.get("code"),
+                                "userId": user_info.get("id"),
+                                "userName": user_info.get("name")
+                            },
+                            exclude=websocket
+                        )
+
+                    elif message_type == "chat_message":
+                        # Broadcast chat messages
+                        await manager.broadcast_to_room(
+                            room_id,
+                            {
+                                "type": "chat_message",
+                                "message": {
+                                    "userId": user_info.get("id"),
+                                    "userName": user_info.get("name"),
+                                    "text": data.get("text"),
+                                    "timestamp": data.get("timestamp")
+                                }
+                            }
+                        )
+
+                    elif message_type == "language_change":
+                        # Broadcast language changes
+                        await manager.broadcast_to_room(
+                            room_id,
+                            {
+                                "type": "language_change",
+                                "language": data.get("language"),
+                                "userId": user_info.get("id")
+                            },
+                            exclude=websocket
+                        )
+
+                except WebSocketDisconnect:
+                    break
+                except json.JSONDecodeError:
+                    continue
+                except Exception as e:
+                    print(f"Error in WebSocket loop: {e}")
+                    break
+
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+    finally:
+        # Disconnect and notify others
+        if user_info:
+            user_data = manager.disconnect(websocket, room_id)
+            if user_data:
+                await manager.broadcast_to_room(
+                    room_id,
+                    {
+                        "type": "user_left",
+                        "user": user_data
+                    }
+                )

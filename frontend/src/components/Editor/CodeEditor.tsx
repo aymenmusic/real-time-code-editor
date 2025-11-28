@@ -1,7 +1,8 @@
-import { useRef, useEffect } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import { useEditorStore } from '../../store/editorStore';
+import { websocketService } from '../../services/websocketService';
 
 interface CodeEditorProps {
   language?: string;
@@ -16,6 +17,7 @@ const CodeEditor = ({
 }: CodeEditorProps) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { code, updateCode, setEditor } = useEditorStore();
+  const [isLocalChange, setIsLocalChange] = useState(false);
 
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -27,9 +29,27 @@ const CodeEditor = ({
 
   const handleEditorChange: OnChange = (value) => {
     if (value !== undefined) {
+      setIsLocalChange(true);
       updateCode(value);
     }
   };
+
+  // Debounced WebSocket send - only send code changes after user stops typing
+  useEffect(() => {
+    if (!isLocalChange) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      if (websocketService.isConnected()) {
+        websocketService.sendCodeChange(code);
+        console.log('Sent code change via WebSocket');
+      }
+      setIsLocalChange(false);
+    }, 500); // Wait 500ms after user stops typing
+
+    return () => clearTimeout(timeoutId);
+  }, [code, isLocalChange]);
 
   // Clean up on unmount
   useEffect(() => {
