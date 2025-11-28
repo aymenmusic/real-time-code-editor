@@ -180,6 +180,30 @@ body {
   overflow: hidden;
 }
 
+/* Disable spell-check completely in the code editor */
+.code-editor-container,
+.code-editor-container *,
+.monaco-editor,
+.monaco-editor *,
+.view-lines,
+.view-line,
+.mtk1,
+.inputarea {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  /* Disable spell checking */
+  -webkit-spellcheck: false !important;
+  spellcheck: false !important;
+}
+
+/* Target Monaco's hidden textarea */
+.monaco-editor textarea {
+  spellcheck: false !important;
+  -webkit-spellcheck: false !important;
+}
+
 /* Editor Actions */
 .editor-actions {
   padding: 1rem;

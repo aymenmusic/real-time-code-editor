@@ -11,12 +11,12 @@ interface CodeEditorProps {
 }
 
 const CodeEditor = ({
-  language = 'javascript',
+  language = 'python',  // Default to Python
   theme = 'vs-dark',
   readOnly = false,
 }: CodeEditorProps) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
-  const { code, updateCode, setEditor } = useEditorStore();
+  const { code, updateCode, setEditor, language: storeLanguage } = useEditorStore();
   const [isLocalChange, setIsLocalChange] = useState(false);
 
   const handleEditorDidMount: OnMount = (editor) => {
@@ -65,7 +65,7 @@ const CodeEditor = ({
       <Editor
         height="100%"
         width="100%"
-        language={language}
+        language={storeLanguage}  // Use language from store
         theme={theme}
         value={code}
         onChange={handleEditorChange}
@@ -78,6 +78,16 @@ const CodeEditor = ({
           tabSize: 2,
           automaticLayout: true,
           wordWrap: 'on',
+          // Disable spell checking - this prevents browser spell-check underlines
+          'semanticHighlighting.enabled': true,
+          quickSuggestions: true,
+          suggestOnTriggerCharacters: true,
+          acceptSuggestionOnEnter: 'on',
+          tabCompletion: 'on',
+          wordBasedSuggestions: 'off',  // Disable word-based suggestions
+          // Most importantly - disable the DOM-based spell checker
+          domReadOnly: undefined,
+          ariaLabel: 'Code Editor',
         }}
       />
     </div>
