@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import { useAuthStore } from '../../store/authStore';
@@ -11,15 +11,17 @@ interface HeaderProps {
 
 const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
   const { isAuthenticated, logout, user } = useAuthStore();
+  const navigate = useNavigate();
   
   const handleLogout = () => {
     logout();
+    navigate('/');  // Redirect to landing page after logout
   };
   
   return (
     <header className="site-header">
       <div className="header-container">
-        <Link to="/" className="logo-link">
+        <Link to={isAuthenticated ? "/editor" : "/"} className="logo-link">
           <h1 className="site-logo">Real-Time Code Editor</h1>
         </Link>
         
