@@ -257,8 +257,44 @@ body {
   flex-direction: column;
   height: 100%;
   overflow: hidden;
+}
+
+/* Dark terminal theme */
+.terminal-dark {
   background-color: #1e1e1e;
   color: #f8f8f8;
+}
+
+.terminal-dark .terminal-header {
+  background-color: #333;
+  border-bottom: 1px solid #444;
+}
+
+.terminal-dark .terminal-header h3 {
+  color: #f8f8f8;
+}
+
+.terminal-dark .terminal-placeholder {
+  color: #888;
+}
+
+/* Light terminal theme */
+.terminal-light {
+  background-color: #ffffff;
+  color: #1e293b;
+}
+
+.terminal-light .terminal-header {
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.terminal-light .terminal-header h3 {
+  color: #1e293b;
+}
+
+.terminal-light .terminal-placeholder {
+  color: #64748b;
 }
 
 .terminal-header {
@@ -266,14 +302,11 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 1rem;
-  background-color: #333;
-  border-bottom: 1px solid #444;
 }
 
 .terminal-header h3 {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #f8f8f8;
 }
 
 .executing-indicator {

@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import { useEditorStore } from '../../store/editorStore';
+import { useThemeStore } from '../../store/themeStore';
 import { websocketService } from '../../services/websocketService';
 
 interface CodeEditorProps {
@@ -12,12 +13,16 @@ interface CodeEditorProps {
 
 const CodeEditor = ({
   language = 'python',  // Default to Python
-  theme = 'vs-dark',
+  theme,  // Will use theme from store
   readOnly = false,
 }: CodeEditorProps) => {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const { code, updateCode, setEditor, language: storeLanguage } = useEditorStore();
+  const { isDarkMode } = useThemeStore();
   const [isLocalChange, setIsLocalChange] = useState(false);
+
+  // Use dark theme when isDarkMode is true, light theme otherwise
+  const editorTheme = theme || (isDarkMode ? 'vs-dark' : 'vs');
 
   const handleEditorDidMount: OnMount = (editor) => {
     editorRef.current = editor;
@@ -66,7 +71,7 @@ const CodeEditor = ({
         height="100%"
         width="100%"
         language={storeLanguage}  // Use language from store
-        theme={theme}
+        theme={editorTheme}  // Use theme based on dark mode toggle
         value={code}
         onChange={handleEditorChange}
         onMount={handleEditorDidMount}

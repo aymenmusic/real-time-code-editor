@@ -1,8 +1,10 @@
 import { useRef, useEffect } from 'react';
 import { useExecutionStore } from '../../store/executionStore';
+import { useThemeStore } from '../../store/themeStore';
 
 const Terminal = () => {
   const { output, errors, isExecuting } = useExecutionStore();
+  const { isDarkMode } = useThemeStore();
   const terminalRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new output is added
@@ -13,7 +15,7 @@ const Terminal = () => {
   }, [output, errors]);
 
   return (
-    <div className="terminal-container">
+    <div className={`terminal-container ${isDarkMode ? 'terminal-dark' : 'terminal-light'}`}>
       <div className="terminal-header">
         <h3>Terminal</h3>
         {isExecuting && <span className="executing-indicator">Running...</span>}
