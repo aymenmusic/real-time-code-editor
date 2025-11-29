@@ -20,13 +20,13 @@
 .dark-mode {
   /* Dark mode colors */
   --background-color: #0f172a;
-  --sidebar-bg: #1e293b;
-  --header-bg: #1e293b;
-  --border-color: #334155;
+  --sidebar-bg: #2c2c2c;
+  --header-bg: #2c2c2c;
+  --border-color: #1a1a1a;
   --text-color: #f1f5f9;
   --text-light: #cbd5e1;
-  --chat-bg: #1e293b;
-  --input-bg: #334155;
+  --chat-bg: #2c2c2c;
+  --input-bg: #1a1a1a;
 }
 
 /* Fix for language selector in dark mode */
@@ -60,7 +60,7 @@
 
 /* Fix for message text in dark mode */
 .dark-mode .message {
-  background-color: #334155;
+  background-color: #1a1a1a;
   color: #f1f5f9;
 }
 
@@ -69,7 +69,7 @@
 }
 
 .dark-mode .message.own-message {
-  background-color: #3b82f6;
+  background-color: #394C8B;
   color: white;
 }
 
