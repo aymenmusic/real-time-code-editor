@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import { useAuthStore } from '../../store/authStore';
+import logo from '../../assets/pairspace-logo4.png';
 import '../../styles/Header.css';
 
 interface HeaderProps {
@@ -11,16 +12,18 @@ interface HeaderProps {
 
 const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
   const { isAuthenticated, logout, user } = useAuthStore();
+  const navigate = useNavigate();
   
   const handleLogout = () => {
     logout();
+    navigate('/');  // Redirect to landing page after logout
   };
   
   return (
     <header className="site-header">
       <div className="header-container">
-        <Link to="/" className="logo-link">
-          <h1 className="site-logo">Real-Time Code Editor</h1>
+        <Link to={isAuthenticated ? "/editor" : "/"} className="logo-link">
+          <img src={logo} alt="PairSpace" className="site-logo" />
         </Link>
         
         <div className="header-right">

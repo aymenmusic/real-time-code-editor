@@ -50,7 +50,7 @@ const LandingPage = () => {
         </div>
 
         <div className="landing-footer">
-          <p>Made with 🖤 by Aymen</p>
+          <p>Made by Aymen with 🖤</p>
         </div>
       </div>
     </div>

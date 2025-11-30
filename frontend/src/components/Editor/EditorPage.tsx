@@ -8,6 +8,8 @@ import Header from '../common/Header';
 import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
+import { useChatStore } from '../../store/chatStore';
+import { websocketService } from '../../services/websocketService';
 
 const EditorPage = () => {
   const { isDarkMode } = useThemeStore();
@@ -15,43 +17,90 @@ const EditorPage = () => {
   // Get authentication state
   const { isAuthenticated, user } = useAuthStore();
   
-  // Add the current user to the users list
+  // Connect to WebSocket and handle real-time events
   useEffect(() => {
-    console.log('Managing user presence...');
+    if (!isAuthenticated || !user) {
+      console.log('Waiting for authentication... isAuthenticated:', isAuthenticated, 'user:', user);
+      return;
+    }
+
+    console.log('Setting up WebSocket connection...');
     
     const editorStore = useEditorStore.getState();
+    const chatStore = useChatStore.getState();
     
-    // Clear existing users first
-    editorStore.setUsers([]);
+    // Assign color from a hardcoded list based on user ID
+    const colors = ['#354889', '#9CC8EA', '#4D9EE8', '#578CD3', '#384B8C'];
+    const colorIndex = parseInt(user.id.toString()) % colors.length;
+    const userColor = colors[colorIndex];
     
-    if (isAuthenticated && user) {
-      // Generate a random color for the user
-      const colors = ['#FF5733', '#33FF57', '#3357FF', '#FF33A8', '#33FFF6', '#F6FF33'];
-      const randomColor = colors[Math.floor(Math.random() * colors.length)];
-      
-      // Add the authenticated user
-      const currentUser = {
-        id: user.id.toString(),
-        name: user.username,
-        color: randomColor
-      };
-      
-      editorStore.addUser(currentUser);
-      console.log(`Added authenticated user: ${currentUser.name}`);
-    } else {
-      // No users to add when not authenticated
-      console.log('No authenticated user to add');
-    }
-    
-    // Set connection status based on authentication
-    editorStore.setIsConnected(isAuthenticated);
-    
-    // Cleanup function
-    return () => {
-      console.log('Cleaning up user presence...');
-      editorStore.setIsConnected(false);
+    const currentUser = {
+      id: user.id.toString(),
+      name: user.username,
+      color: userColor
     };
-  }, [isAuthenticated, user]); // Re-run when authentication state changes
+
+    // Set up message handlers BEFORE connecting
+    const handleUsersList = (data: any) => {
+      console.log('Users list received:', data.users);
+      editorStore.setUsers(data.users);
+    };
+
+    const handleUserJoined = (data: any) => {
+      console.log('User joined:', data.user);
+      editorStore.addUser(data.user);
+    };
+
+    const handleUserLeft = (data: any) => {
+      console.log('User left:', data.user);
+      editorStore.removeUser(data.user.id);
+    };
+
+    const handleCodeChange = (data: any) => {
+      console.log('Code change from:', data.userName);
+      // Update code without triggering another WebSocket send
+      editorStore.updateCode(data.code);
+    };
+
+    const handleChatMessage = (data: any) => {
+      console.log('Chat message received:', data.message);
+      chatStore.addMessage({
+        userId: data.message.userId,
+        userName: data.message.userName,
+        text: data.message.text,
+      });
+    };
+
+    const handleLanguageChange = (data: any) => {
+      console.log('Language changed to:', data.language);
+      editorStore.setLanguage(data.language);
+    };
+
+    // Register handlers
+    websocketService.on('users_list', handleUsersList);
+    websocketService.on('user_joined', handleUserJoined);
+    websocketService.on('user_left', handleUserLeft);
+    websocketService.on('code_change', handleCodeChange);
+    websocketService.on('chat_message', handleChatMessage);
+    websocketService.on('language_change', handleLanguageChange);
+
+    // Connect to WebSocket (will skip if already connected)
+    websocketService.connect(currentUser);
+
+    editorStore.setIsConnected(true);
+
+    // Cleanup function - DON'T disconnect, just remove handlers
+    return () => {
+      console.log('Cleaning up message handlers (keeping connection)...');
+      websocketService.off('users_list', handleUsersList);
+      websocketService.off('user_joined', handleUserJoined);
+      websocketService.off('user_left', handleUserLeft);
+      websocketService.off('code_change', handleCodeChange);
+      websocketService.off('chat_message', handleChatMessage);
+      websocketService.off('language_change', handleLanguageChange);
+      // DON'T disconnect here - let it stay connected
+    };
+  }, [isAuthenticated, user]);
   
   // Log code changes
   useEffect(() => {

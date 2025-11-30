@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: code-editor-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: code-editor-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+databases:
+  - name: code-editor-db
+    databaseName: code_editor_db
+    user: code_editor_user

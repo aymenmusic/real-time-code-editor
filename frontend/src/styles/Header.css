@@ -17,13 +17,20 @@
 
 .logo-link {
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 .site-logo {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin: 0;
+  height: 50px;
+  width: auto;
+  object-fit: contain;
+  transition: opacity 0.2s;
+}
+
+.logo-link:hover .site-logo {
+  opacity: 0.85;
 }
 
 .header-right {
@@ -102,18 +109,20 @@
 }
 
 .logout-button {
-  background: none;
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
   border: none;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 500;
-  color: var(--text-color);
-  padding: 0;
-  transition: color 0.2s;
+  transition: background-color 0.2s;
 }
 
 .logout-button:hover {
-  color: #ef4444;
+  background-color: #1d4ed8;
+  color: white;
 }
 
 /* Responsive adjustments */
@@ -123,7 +132,7 @@
   }
   
   .site-logo {
-    font-size: 1.25rem;
+    height: 36px;
   }
   
   .site-nav {
