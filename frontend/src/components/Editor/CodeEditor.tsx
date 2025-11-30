@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
-import Editor, { OnMount, OnChange } from '@monaco-editor/react';
+import Editor, { OnMount, OnChange, loader } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
+import * as monaco from 'monaco-editor';
 import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
@@ -24,9 +25,34 @@ const CodeEditor = ({
   const [isLocalChange, setIsLocalChange] = useState(false);
 
   // Use dark theme when isDarkMode is true, light theme otherwise
-  const editorTheme = theme || (isDarkMode ? 'vs-dark' : 'vs');
+  const editorTheme = theme || (isDarkMode ? 'dark-blue' : 'vs');
+ 
+  const handleEditorDidMount: OnMount = (editor, monaco) => {
+    // Define custom dark blue theme BEFORE setting the editor
+    monaco.editor.defineTheme('dark-blue', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [],
+      colors: {
+        'editor.background': '#1a2332',
+        'editor.foreground': '#e0e6ed',
+        'editorLineNumber.foreground': '#5a7299',
+        'editor.selectionBackground': '#394C8B',
+        'editor.inactiveSelectionBackground': '#2d3e5a',
+        'editorCursor.foreground': '#60a5fa',
+        'editor.lineHighlightBackground': '#1e2a3d',
+        // 🔥 THIS FIXES THE WHITE LINE
+        'editorGroup.border': '#1A2531',
 
-  const handleEditorDidMount: OnMount = (editor) => {
+
+      }
+    });
+    
+    // Set the theme if in dark mode
+    if (isDarkMode) {
+      monaco.editor.setTheme('dark-blue');
+    }
+    
     editorRef.current = editor;
     setEditor(editor);
     
@@ -67,6 +93,14 @@ const CodeEditor = ({
       }
     };
   }, [setEditor]);
+
+  // Update theme when dark mode changes
+  useEffect(() => {
+    if (editorRef.current) {
+      const newTheme = isDarkMode ? 'dark-blue' : 'vs';
+      monaco.editor.setTheme(newTheme);
+    }
+  }, [isDarkMode]);
 
   return (
     <div className="code-editor-container">

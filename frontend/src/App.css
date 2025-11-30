@@ -20,13 +20,13 @@
 .dark-mode {
   /* Dark mode colors */
   --background-color: #0f172a;
-  --sidebar-bg: #2c2c2c;
-  --header-bg: #2c2c2c;
-  --border-color: #1a1a1a;
+  --sidebar-bg: #1A2432;
+  --header-bg: #1A2432;
+  --border-color: #2826405c;
   --text-color: #f1f5f9;
   --text-light: #cbd5e1;
   --chat-bg: #2c2c2c;
-  --input-bg: #1a1a1a;
+  --input-bg: #1A2432;
 }
 
 /* Fix for language selector in dark mode */
@@ -125,6 +125,11 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Dark mode terminal border */
+.dark-mode .terminal-panel {
+  border-top: 2px solid #1A2531;
 }
 
 
@@ -266,7 +271,7 @@ body {
 }
 
 .terminal-dark .terminal-header {
-  background-color: #333;
+  background-color: #1A2531;
   border-bottom: 1px solid #444;
 }
 
