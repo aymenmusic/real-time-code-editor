@@ -35,7 +35,8 @@ export const useAuthStore = create<AuthState>()(
       login: async (username: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch('http://localhost:8000/auth/login', {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${apiUrl}/auth/login`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -68,7 +69,8 @@ export const useAuthStore = create<AuthState>()(
       register: async (email: string, username: string, password: string) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await fetch('http://localhost:8000/auth/register', {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${apiUrl}/auth/register`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -98,7 +100,8 @@ export const useAuthStore = create<AuthState>()(
         if (!token) return;
 
         try {
-          const response = await fetch('http://localhost:8000/auth/me', {
+          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+          const response = await fetch(`${apiUrl}/auth/me`, {
             headers: {
               'Authorization': `Bearer ${token}`,
             },
