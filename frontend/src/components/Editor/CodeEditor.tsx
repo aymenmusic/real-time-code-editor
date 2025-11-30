@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react';
-import Editor, { OnMount, OnChange, loader } from '@monaco-editor/react';
+import Editor, { OnMount, OnChange } from '@monaco-editor/react';
 import { editor } from 'monaco-editor';
 import * as monaco from 'monaco-editor';
 import { useEditorStore } from '../../store/editorStore';
@@ -8,13 +8,11 @@ import { useAuthStore } from '../../store/authStore';
 import { websocketService } from '../../services/websocketService';
 
 interface CodeEditorProps {
-  language?: string;
   theme?: string;
   readOnly?: boolean;
 }
 
 const CodeEditor = ({
-  language = 'python',  // Default to Python
   theme,  // Will use theme from store
   readOnly = false,
 }: CodeEditorProps) => {

@@ -1,13 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../store/chatStore';
-import { useEditorStore } from '../../store/editorStore';
 import { useAuthStore } from '../../store/authStore';
 import { websocketService } from '../../services/websocketService';
 
 const Chat = () => {
   const [message, setMessage] = useState('');
-  const { messages, addMessage } = useChatStore();
-  const { users } = useEditorStore();
+  const { messages } = useChatStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
