@@ -18,8 +18,9 @@ class WebSocketService {
     this.isConnecting = true;
     this.currentUser = user;
 
-    // Use ws:// for development (change to wss:// for production with HTTPS)
-    const wsUrl = `ws://localhost:8000/ws/${this.roomId}`;
+    // Use environment variable for WebSocket URL
+    const wsBaseUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+    const wsUrl = `${wsBaseUrl}/ws/${this.roomId}`;
     
     console.log('Connecting to WebSocket:', wsUrl);
     
