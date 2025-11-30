@@ -168,9 +168,9 @@ body {
 
 
 .editor-sidebar {
-  flex: 1; /* Take up 1/4 of the available space */
-  max-width: 350px;
-  min-width: 300px;
+  flex: 0 0 30%; /* Take up 30% of the available space */
+  max-width: 500px;
+  min-width: 350px;
   background-color: var(--sidebar-bg);
   border-left: 1px solid var(--border-color);
   display: flex;
