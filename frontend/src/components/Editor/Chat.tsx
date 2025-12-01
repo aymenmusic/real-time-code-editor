@@ -82,7 +82,7 @@ const Chat = () => {
         </form>
       ) : (
         <div className="chat-auth-message">
-          <p>Please <a href="/register">sign up</a> or <a href="/login">log in</a> to use the chat feature.</p>
+          <p>This is an offline experience. Please <a href="/register">sign up</a> or <a href="/login">log in</a> to use the collaborative features.</p>
         </div>
       )}
     </div>
