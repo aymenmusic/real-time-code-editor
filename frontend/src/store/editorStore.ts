@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { editor } from 'monaco-editor';
 
 export interface User {
@@ -22,30 +23,41 @@ interface EditorState {
   removeUser: (userId: string) => void;
 }
 
-export const useEditorStore = create<EditorState>((set) => ({
-  code: '# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()',
-  language: 'python',
-  editor: null,
-  isConnected: false,
-  users: [],
-  
-  updateCode: (newCode) => set({ code: newCode }),
-  
-  setLanguage: (language) => set({ language }),
-  
-  setEditor: (editor) => set({ editor }),
-  
-  setIsConnected: (isConnected) => set({ isConnected }),
-  
-  setUsers: (users) => set({ users }),
-  
-  addUser: (user) => 
-    set((state) => ({
-      users: [...state.users.filter(u => u.id !== user.id), user]
-    })),
-  
-  removeUser: (userId) => 
-    set((state) => ({
-      users: state.users.filter(user => user.id !== userId)
-    })),
-}));
+export const useEditorStore = create<EditorState>()(
+  persist(
+    (set) => ({
+      code: '# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()',
+      language: 'python',
+      editor: null,
+      isConnected: false,
+      users: [],
+      
+      updateCode: (newCode) => set({ code: newCode }),
+      
+      setLanguage: (language) => set({ language }),
+      
+      setEditor: (editor) => set({ editor }),
+      
+      setIsConnected: (isConnected) => set({ isConnected }),
+      
+      setUsers: (users) => set({ users }),
+      
+      addUser: (user) => 
+        set((state) => ({
+          users: [...state.users.filter(u => u.id !== user.id), user]
+        })),
+      
+      removeUser: (userId) => 
+        set((state) => ({
+          users: state.users.filter(user => user.id !== userId)
+        })),
+    }),
+    {
+      name: 'editor-storage', // localStorage key
+      partialize: (state) => ({ 
+        code: state.code, 
+        language: state.language 
+      }), // Only persist code and language, not editor instance or connection state
+    }
+  )
+);
