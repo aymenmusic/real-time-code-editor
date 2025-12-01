@@ -70,23 +70,3 @@ python run.py
 cd frontend
 npm run dev
 ```
-
-## Security Best Practices
-
-- **Never commit the `.env` file to version control**
-- Rotate your JWT secret key periodically
-- Use strong, unique passwords for database access
-- In production, set up HTTPS for all communication
-- Limit CORS to only the domains that need access
-- Implement rate limiting for API endpoints
-- Regularly update dependencies to patch security vulnerabilities
-
-## Deployment Considerations
-
-When deploying to production:
-
-1. Use environment variables provided by your hosting platform instead of a `.env` file
-2. Set up a secrets management service for sensitive information
-3. Configure proper CORS settings in `main.py` to restrict access to your domain
-4. Set up HTTPS for all communication
-5. Implement a proper database backup strategy
