@@ -95,6 +95,13 @@
 .username {
   font-weight: 600;
   color: var(--primary-color);
+  cursor: default;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.username:hover {
+  opacity: 0.75;
 }
 
 .logout-button {

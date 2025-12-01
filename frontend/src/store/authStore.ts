@@ -46,6 +46,20 @@ export const useAuthStore = create<AuthState>()(
 
           if (!response.ok) {
             const errorData = await response.json();
+            
+            // Handle rate limiting
+            if (response.status === 429) {
+              throw new Error('Too many login attempts. Please try again later.');
+            }
+            
+            // Handle validation errors
+            if (errorData.detail && Array.isArray(errorData.detail)) {
+              const validationErrors = errorData.detail
+                .map((err: any) => err.msg || err.message)
+                .join(', ');
+              throw new Error(validationErrors);
+            }
+            
             throw new Error(errorData.detail || 'Login failed');
           }
 
@@ -80,6 +94,15 @@ export const useAuthStore = create<AuthState>()(
 
           if (!response.ok) {
             const errorData = await response.json();
+            
+            // Handle validation errors from Pydantic
+            if (errorData.detail && Array.isArray(errorData.detail)) {
+              const validationErrors = errorData.detail
+                .map((err: any) => err.msg || err.message)
+                .join(', ');
+              throw new Error(validationErrors);
+            }
+            
             throw new Error(errorData.detail || 'Registration failed');
           }
 

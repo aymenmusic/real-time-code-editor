@@ -65,6 +65,13 @@
   color: var(--text-color);
 }
 
+.password-requirements {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  margin-top: 0.25rem;
+  line-height: 1.5;
+}
+
 .form-group input {
   padding: 0.75rem;
   border-radius: 0.375rem;

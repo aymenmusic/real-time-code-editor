@@ -1,7 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from database.database import get_db
 from schemas.user import UserCreate, UserResponse, Token, UserLogin
@@ -13,9 +15,12 @@ router = APIRouter(
     tags=["Authentication"],
 )
 
+limiter = Limiter(key_func=get_remote_address)
+
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register_user(user: UserCreate, db: Session = Depends(get_db)):
+@limiter.limit("5/hour")
+def register_user(request: Request, user: UserCreate, db: Session = Depends(get_db)):
     # Check if email already exists
     db_user_email = db.query(User).filter(User.email == user.email).first()
     if db_user_email:
@@ -49,7 +54,8 @@ def register_user(user: UserCreate, db: Session = Depends(get_db)):
 
 
 @router.post("/token", response_model=Token)
-def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login_for_access_token(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = authenticate_user(db, form_data.username, form_data.password)
     if not user:
         raise HTTPException(
@@ -66,7 +72,8 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
 
 
 @router.post("/login", response_model=Token)
-def login(user_data: UserLogin, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, user_data: UserLogin, db: Session = Depends(get_db)):
     user = authenticate_user(db, user_data.username, user_data.password)
     if not user:
         raise HTTPException(
