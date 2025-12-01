@@ -15,7 +15,7 @@ from database.database import engine, Base
 from routers import auth
 from models import user
 from models.user import User
-from auth.utils import get_current_active_user
+from auth.utils import get_current_active_user, get_current_user_optional
 from websocket_manager import manager
 
 # Create database tables
@@ -79,8 +79,10 @@ async def root():
 async def execute_code(
     request: Request,
     execution: CodeExecution,
-    current_user: User = Depends(get_current_active_user)
+    current_user: Optional[User] = Depends(get_current_user_optional)
 ):
+    # Works for both authenticated and unauthenticated users
+    # If current_user is None, it's an anonymous user
     if execution.language != "python":
         raise HTTPException(
             status_code=400, detail=f"Language {execution.language} not supported yet")

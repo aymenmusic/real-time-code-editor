@@ -41,18 +41,24 @@ export const executeCode = async (code: string, language: string): Promise<void>
   executionStore.setIsExecuting(true);
   
   try {
-    // Get the auth token from localStorage
+    // Get the auth token from localStorage (optional)
     const authStorage = localStorage.getItem('auth-storage');
     const token = authStorage ? JSON.parse(authStorage).state.token : null;
+    
+    // Build headers - only include Authorization if token exists
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     
     // Send the code to our backend for execution
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
     const response = await fetch(`${apiUrl}/execute`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
-      },
+      headers,
       body: JSON.stringify({
         code,
         language,

@@ -4,7 +4,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordBearer, HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
@@ -95,3 +95,39 @@ async def get_current_active_user(current_user: User = Depends(get_current_user)
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Inactive user")
     return current_user
+
+
+# HTTP Bearer for optional authentication
+http_bearer_optional = HTTPBearer(auto_error=False)
+
+
+async def get_current_user_optional(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(
+        http_bearer_optional),
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """
+    Optional authentication - returns None if no token or invalid token,
+    instead of raising an exception. Useful for endpoints that work with or without auth.
+    """
+    if not credentials:
+        return None
+
+    token = credentials.credentials
+    if not token:
+        return None
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        user_id: int = payload.get("id")
+        if email is None or user_id is None:
+            return None
+        token_data = TokenData(email=email, user_id=user_id)
+    except JWTError:
+        return None
+
+    user = get_user_by_email(db, email=token_data.email)
+    if user is None or not user.is_active:
+        return None
+    return user
