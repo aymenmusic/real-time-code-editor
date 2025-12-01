@@ -149,6 +149,11 @@ export const useAuthStore = create<AuthState>()(
         // Reset code to default placeholder
         editorStore.updateCode('# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()');
         
+        // Clear chat messages - dynamic import to avoid circular dependency
+        import('./chatStore').then(({ useChatStore }) => {
+          useChatStore.getState().clearMessages();
+        });
+        
         set({
           token: null,
           user: null,
