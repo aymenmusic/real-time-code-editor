@@ -34,9 +34,6 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                   {isEditorPage && (
                     <LanguageSelector />
                   )}
-                  <span className="nav-link username">
-                    {user?.username}
-                  </span>
                   {!isEditorPage && (
                     <Link to="/editor" className="nav-link editor-link">
                       Editor
@@ -58,12 +55,17 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
           {showNavLinks && (
             <>
               {isAuthenticated ? (
-                <button 
-                  onClick={handleLogout} 
-                  className="nav-link logout-button"
-                >
-                  Log Out
-                </button>
+                <>
+                  <span className="nav-link username">
+                    {user?.username}
+                  </span>
+                  <button 
+                    onClick={handleLogout} 
+                    className="nav-link logout-button"
+                  >
+                    Log Out
+                  </button>
+                </>
               ) : (
                 <>
                   <Link to="/login" className="nav-link login-link">
