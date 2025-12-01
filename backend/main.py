@@ -49,7 +49,7 @@ app.include_router(auth.router)
 
 class CodeExecution(BaseModel):
     code: str = Field(..., max_length=50000, min_length=1)
-    language: str = Field(default="python", regex="^(python)$")
+    language: str = Field(default="python", pattern="^(python)$")
 
     @validator('code')
     def validate_code(cls, v):

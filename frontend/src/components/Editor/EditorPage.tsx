@@ -98,6 +98,10 @@ const EditorPage = () => {
       websocketService.off('code_change', handleCodeChange);
       websocketService.off('chat_message', handleChatMessage);
       websocketService.off('language_change', handleLanguageChange);
+      
+      // Clear chat messages when leaving editor
+      chatStore.clearMessages();
+      
       // DON'T disconnect here - let it stay connected
     };
   }, [isAuthenticated, user]);
