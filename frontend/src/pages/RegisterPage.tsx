@@ -84,12 +84,16 @@ const RegisterPage = () => {
             <input 
               type="password" 
               id="password" 
-              placeholder="Create a password (min. 8 characters)"
+              placeholder="Create a strong password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
             />
+            <small className="password-requirements">
+              Password must be at least 8 characters and contain:
+              <br />• One uppercase letter • One lowercase letter • One digit
+            </small>
           </div>
           
           <div className="form-group">
