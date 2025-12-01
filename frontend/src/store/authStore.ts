@@ -120,7 +120,11 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         // Clear users list when logging out
-        useEditorStore.getState().setUsers([]);
+        const editorStore = useEditorStore.getState();
+        editorStore.setUsers([]);
+        
+        // Reset code to default placeholder
+        editorStore.updateCode('# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()');
         
         set({
           token: null,
