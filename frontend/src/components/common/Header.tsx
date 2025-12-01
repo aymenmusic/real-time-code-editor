@@ -42,25 +42,31 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                       Editor
                     </Link>
                   )}
-                  <button 
-                    onClick={handleLogout} 
-                    className="nav-link logout-button"
-                  >
-                    Log Out
-                  </button>
-                  {isEditorPage && (
-                    <div className="connection-status">
-                      <span className="status-indicator connected"></span>
-                      <span>Connected</span>
-                    </div>
-                  )}
                 </>
               ) : (
                 <>
                   {isEditorPage && (
                     <LanguageSelector />
                   )}
-                  <Link to="/login" className="nav-link">
+                </>
+              )}
+            </nav>
+          )}
+          
+          <DarkModeToggle />
+          
+          {showNavLinks && (
+            <>
+              {isAuthenticated ? (
+                <button 
+                  onClick={handleLogout} 
+                  className="nav-link logout-button"
+                >
+                  Log Out
+                </button>
+              ) : (
+                <>
+                  <Link to="/login" className="nav-link login-link">
                     Log In
                   </Link>
                   <Link to="/register" className="nav-link register-link">
@@ -68,10 +74,8 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                   </Link>
                 </>
               )}
-            </nav>
+            </>
           )}
-          
-          <DarkModeToggle />
         </div>
       </div>
     </header>
