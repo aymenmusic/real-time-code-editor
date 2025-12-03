@@ -87,8 +87,18 @@ function App() {
             path="/register" 
             element={isAuthenticated ? <Navigate to="/editor" replace /> : <RegisterPage />} 
           />
-          {/* Editor page - accessible to all, but works best when authenticated */}
-          <Route path="/editor" element={<EditorPage />} />
+          {/* Editor page - accessible to authenticated users or guest users who clicked "Try Without Account" */}
+          <Route 
+            path="/editor" 
+            element={
+              isAuthenticated || sessionStorage.getItem('allowGuestAccess') === 'true' 
+                ? <EditorPage /> 
+                : <Navigate to="/" replace />
+            } 
+          />
+          
+          {/* Catch-all route - redirect to landing page */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
     </div>
