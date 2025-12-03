@@ -118,13 +118,39 @@ const CodeEditor = ({
           tabSize: 2,
           automaticLayout: true,
           wordWrap: 'on',
-          // Disable spell checking - this prevents browser spell-check underlines
+          // Enable IntelliSense and autocomplete features
           'semanticHighlighting.enabled': true,
-          quickSuggestions: true,
+          quickSuggestions: {
+            other: true,
+            comments: false,
+            strings: false,
+          },
           suggestOnTriggerCharacters: true,
           acceptSuggestionOnEnter: 'on',
           tabCompletion: 'on',
-          wordBasedSuggestions: 'off',  // Disable word-based suggestions
+          wordBasedSuggestions: 'allDocuments',  // Enable word-based suggestions from all documents
+          suggest: {
+            showWords: true,
+            showKeywords: true,
+            showSnippets: true,
+            showFunctions: true,
+            showConstructors: true,
+            showFields: true,
+            showVariables: true,
+            showClasses: true,
+            showMethods: true,
+            showProperties: true,
+            showValues: true,
+            showConstants: true,
+            insertMode: 'insert',
+          },
+          // Enable parameter hints
+          parameterHints: {
+            enabled: true,
+            cycle: true,
+          },
+          // Show suggestions automatically
+          suggestSelection: 'first',
           // Most importantly - disable the DOM-based spell checker
           domReadOnly: undefined,
           ariaLabel: 'Code Editor',
