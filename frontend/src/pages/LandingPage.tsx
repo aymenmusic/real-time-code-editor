@@ -1,10 +1,16 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
 import Header from '../components/common/Header';
 import '../styles/LandingPage.css';
 
 const LandingPage = () => {
   const { isDarkMode } = useThemeStore();
+  const navigate = useNavigate();
+  
+  const handleTryWithoutAccount = () => {
+    sessionStorage.setItem('allowGuestAccess', 'true');
+    navigate('/editor');
+  };
 
   return (
     <div className={`landing-page ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
@@ -44,7 +50,11 @@ const LandingPage = () => {
           <Link to="/login" className="auth-button login-button">
             Log In
           </Link>
-          <Link to="/editor" className="auth-button try-button">
+          <Link 
+            to="/editor" 
+            className="auth-button try-button"
+            onClick={() => sessionStorage.setItem('allowGuestAccess', 'true')}
+          >
             Try Without Account
           </Link>
         </div>

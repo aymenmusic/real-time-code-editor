@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
@@ -27,6 +29,39 @@ app = FastAPI(title="Real-Time Code Editor API")
 limiter = Limiter(key_func=get_remote_address)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# Custom validation error handler to clean up error messages
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Custom handler to clean up validation error messages.
+    Removes the "Value error, " prefix that Pydantic adds to ValueError messages.
+    """
+    errors = []
+    for error in exc.errors():
+        error_msg = error.get("msg", "")
+        # Remove "Value error, " prefix if present
+        if error_msg.startswith("Value error, "):
+            error_msg = error_msg.replace("Value error, ", "", 1)
+
+        errors.append({
+            "loc": error.get("loc"),
+            "msg": error_msg,
+            "type": error.get("type")
+        })
+
+    # Return the first error message as the main detail
+    detail = errors[0]["msg"] if errors else "Validation error"
+
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": detail,
+            "errors": errors
+        }
+    )
+
 
 # Add CORS middleware to allow requests from the frontend
 # Get allowed origins from environment variables or use a default for development
