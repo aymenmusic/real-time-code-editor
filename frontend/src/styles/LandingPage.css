@@ -125,10 +125,21 @@
   background-color: var(--success-color);
   color: white;
   border: none;
+  outline: none;
 }
 
 .try-button:hover {
   background-color: #0ca678;
+}
+
+.try-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.3);
+}
+
+.try-button:active {
+  outline: none;
+  border: none;
 }
 
 .landing-footer {

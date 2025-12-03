@@ -50,13 +50,12 @@ const LandingPage = () => {
           <Link to="/login" className="auth-button login-button">
             Log In
           </Link>
-          <Link 
-            to="/editor" 
+          <button 
             className="auth-button try-button"
-            onClick={() => sessionStorage.setItem('allowGuestAccess', 'true')}
+            onClick={handleTryWithoutAccount}
           >
             Try Without Account
-          </Link>
+          </button>
         </div>
 
         <div className="landing-footer">
