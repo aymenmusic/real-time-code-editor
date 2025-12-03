@@ -61,7 +61,7 @@ function App() {
             borderRadius: '50%',
             animation: 'spin 1s linear infinite'
           }}></div>
-          <p style={{ color: 'var(--text-color)', fontSize: '0.875rem' }}>
+          <p style={{ color: '#1e293b', fontSize: '0.875rem' }}>
             Connecting to server...
           </p>
         </div>
