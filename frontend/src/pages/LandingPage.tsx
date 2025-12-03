@@ -44,7 +44,11 @@ const LandingPage = () => {
           <Link to="/login" className="auth-button login-button">
             Log In
           </Link>
-          <Link to="/editor" className="auth-button try-button">
+          <Link 
+            to="/editor" 
+            className="auth-button try-button"
+            onClick={() => sessionStorage.setItem('allowGuestAccess', 'true')}
+          >
             Try Without Account
           </Link>
         </div>
