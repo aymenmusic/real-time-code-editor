@@ -40,10 +40,18 @@ const EditorPage = () => {
       color: userColor
     };
 
+    // Optimistically add yourself to the users list immediately
+    // This prevents showing "No users connected" during the brief connection delay
+    editorStore.addUser(currentUser);
+
     // Set up message handlers BEFORE connecting
     const handleUsersList = (data: any) => {
       console.log('Users list received:', data.users);
-      editorStore.setUsers(data.users);
+      // Make sure you're in the list (in case the optimistic add was cleared)
+      const usersWithSelf = data.users.some((u: any) => u.id === currentUser.id) 
+        ? data.users 
+        : [...data.users, currentUser];
+      editorStore.setUsers(usersWithSelf);
     };
 
     const handleUserJoined = (data: any) => {
@@ -53,7 +61,11 @@ const EditorPage = () => {
 
     const handleUserLeft = (data: any) => {
       console.log('User left:', data.user);
-      editorStore.removeUser(data.user.id);
+      // Don't remove yourself from the list - this prevents flickering on refresh
+      // When you refresh, you receive your own user_left event before reconnecting
+      if (data.user.id !== currentUser.id) {
+        editorStore.removeUser(data.user.id);
+      }
     };
 
     const handleCodeChange = (data: any) => {

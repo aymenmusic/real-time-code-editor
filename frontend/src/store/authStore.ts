@@ -120,24 +120,69 @@ export const useAuthStore = create<AuthState>()(
 
       fetchUserData: async () => {
         const { token } = get();
-        if (!token) return;
+        if (!token) {
+          // No token, ensure we're not authenticated
+          set({ isAuthenticated: false, user: null });
+          return;
+        }
 
-        try {
-          const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-          const response = await fetch(`${apiUrl}/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
-          });
+        const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+        const maxRetries = 3;
+        const retryDelay = 2000; // 2 seconds
 
-          if (!response.ok) {
-            throw new Error('Failed to fetch user data');
+        for (let attempt = 0; attempt < maxRetries; attempt++) {
+          try {
+            console.log(`Fetching user data (attempt ${attempt + 1}/${maxRetries})...`);
+            
+            const response = await fetch(`${apiUrl}/auth/me`, {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+              // Add timeout to avoid hanging
+              signal: AbortSignal.timeout(10000), // 10 second timeout
+            });
+
+            if (!response.ok) {
+              // Token is invalid or expired - log user out
+              if (response.status === 401 || response.status === 403) {
+                console.error('Token is invalid or expired. Logging out...');
+                get().logout();
+                return;
+              }
+              
+              // Server error - might be waking up, retry
+              if (response.status >= 500 && attempt < maxRetries - 1) {
+                console.log(`Server error (${response.status}), retrying in ${retryDelay}ms...`);
+                await new Promise(resolve => setTimeout(resolve, retryDelay));
+                continue;
+              }
+              
+              throw new Error(`Failed to fetch user data: ${response.status}`);
+            }
+
+            const userData = await response.json();
+            set({ 
+              user: userData, 
+              isAuthenticated: true // Reconfirm authentication on successful fetch
+            });
+            console.log('Successfully fetched user data');
+            return; // Success, exit retry loop
+            
+          } catch (error) {
+            console.error(`Error fetching user data (attempt ${attempt + 1}):`, error);
+            
+            // If it's the last attempt, handle the error
+            if (attempt === maxRetries - 1) {
+              // Network error or timeout - likely backend is down or still waking up
+              // We'll set isAuthenticated to false to force re-login
+              console.error('Failed to fetch user data after retries. Setting auth to false.');
+              set({ isAuthenticated: false });
+            } else {
+              // Wait before retrying
+              console.log(`Retrying in ${retryDelay}ms...`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+            }
           }
-
-          const userData = await response.json();
-          set({ user: userData });
-        } catch (error) {
-          console.error('Error fetching user data:', error);
         }
       },
 

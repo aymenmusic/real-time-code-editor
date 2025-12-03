@@ -9,10 +9,16 @@ class WebSocketService {
   private currentUser: { id: string; name: string; color: string } | null = null;
 
   connect(user: { id: string; name: string; color: string }) {
-    // Prevent duplicate connections
-    if (this.isConnecting || this.isConnected()) {
-      console.log('Already connected or connecting, skipping...');
+    // If already connected with the same user, just return
+    if (this.isConnected() && this.currentUser?.id === user.id) {
+      console.log('Already connected as same user, skipping...');
       return;
+    }
+
+    // If connecting or connected as different user, disconnect first
+    if ((this.isConnecting || this.isConnected()) && this.currentUser?.id !== user.id) {
+      console.log('Disconnecting previous connection before reconnecting...');
+      this.disconnect();
     }
 
     this.isConnecting = true;
