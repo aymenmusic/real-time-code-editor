@@ -6,6 +6,7 @@ import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
 import { websocketService } from '../../services/websocketService';
+import { getBuiltinSuggestions } from '../../utils/autocompleteSuggestions';
 
 interface CodeEditorProps {
   theme?: string;
@@ -50,6 +51,50 @@ const CodeEditor = ({
     if (isDarkMode) {
       monaco.editor.setTheme('dark-blue');
     }
+    
+    // Register autocomplete provider for built-in functions
+    // This works for Python, JavaScript, and TypeScript
+    const languages = ['python', 'javascript', 'typescript'];
+    
+    languages.forEach((lang) => {
+      monaco.languages.registerCompletionItemProvider(lang, {
+        provideCompletionItems: (model, position) => {
+          const builtins = getBuiltinSuggestions(lang);
+          const word = model.getWordUntilPosition(position);
+          const wordText = word.word.toLowerCase();
+          
+          // Only provide built-in suggestions if user has typed something
+          // and filter to match what they're typing
+          const filteredBuiltins = wordText.length > 0 
+            ? builtins.filter(item => item.label.toLowerCase().startsWith(wordText))
+            : builtins;
+          
+          const suggestions = filteredBuiltins.map((item) => ({
+            label: item.label,
+            kind: monaco.languages.CompletionItemKind.Function,
+            detail: item.detail,
+            documentation: item.documentation,
+            insertText: item.label,
+            // Use 'z_' prefix to give built-ins lower priority (sorted alphabetically)
+            // User-defined functions will appear first, then built-ins
+            sortText: `z_${item.label}`,
+            range: {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: word.startColumn,
+              endColumn: word.endColumn,
+            },
+          }));
+          
+          // Return suggestions without setting 'incomplete' flag
+          // This allows Monaco's default providers to also contribute
+          return { 
+            suggestions,
+            incomplete: false
+          };
+        },
+      });
+    });
     
     editorRef.current = editor;
     setEditor(editor);
