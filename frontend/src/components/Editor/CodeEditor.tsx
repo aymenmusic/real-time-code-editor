@@ -6,6 +6,7 @@ import { useEditorStore } from '../../store/editorStore';
 import { useThemeStore } from '../../store/themeStore';
 import { useAuthStore } from '../../store/authStore';
 import { websocketService } from '../../services/websocketService';
+import { getBuiltinSuggestions } from '../../utils/autocompleteSuggestions';
 
 interface CodeEditorProps {
   theme?: string;
@@ -50,6 +51,34 @@ const CodeEditor = ({
     if (isDarkMode) {
       monaco.editor.setTheme('dark-blue');
     }
+    
+    // Register autocomplete provider for built-in functions
+    // This works for Python, JavaScript, and TypeScript
+    const languages = ['python', 'javascript', 'typescript'];
+    
+    languages.forEach((lang) => {
+      monaco.languages.registerCompletionItemProvider(lang, {
+        provideCompletionItems: (model, position) => {
+          const builtins = getBuiltinSuggestions(lang);
+          
+          const suggestions = builtins.map((item) => ({
+            label: item.label,
+            kind: monaco.languages.CompletionItemKind.Function,
+            detail: item.detail,
+            documentation: item.documentation,
+            insertText: item.label,
+            range: {
+              startLineNumber: position.lineNumber,
+              endLineNumber: position.lineNumber,
+              startColumn: model.getWordUntilPosition(position).startColumn,
+              endColumn: position.column,
+            },
+          }));
+          
+          return { suggestions };
+        },
+      });
+    });
     
     editorRef.current = editor;
     setEditor(editor);
