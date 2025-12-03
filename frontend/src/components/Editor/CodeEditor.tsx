@@ -60,22 +60,38 @@ const CodeEditor = ({
       monaco.languages.registerCompletionItemProvider(lang, {
         provideCompletionItems: (model, position) => {
           const builtins = getBuiltinSuggestions(lang);
+          const word = model.getWordUntilPosition(position);
+          const wordText = word.word.toLowerCase();
           
-          const suggestions = builtins.map((item) => ({
+          // Only provide built-in suggestions if user has typed something
+          // and filter to match what they're typing
+          const filteredBuiltins = wordText.length > 0 
+            ? builtins.filter(item => item.label.toLowerCase().startsWith(wordText))
+            : builtins;
+          
+          const suggestions = filteredBuiltins.map((item) => ({
             label: item.label,
             kind: monaco.languages.CompletionItemKind.Function,
             detail: item.detail,
             documentation: item.documentation,
             insertText: item.label,
+            // Use 'z_' prefix to give built-ins lower priority (sorted alphabetically)
+            // User-defined functions will appear first, then built-ins
+            sortText: `z_${item.label}`,
             range: {
               startLineNumber: position.lineNumber,
               endLineNumber: position.lineNumber,
-              startColumn: model.getWordUntilPosition(position).startColumn,
-              endColumn: position.column,
+              startColumn: word.startColumn,
+              endColumn: word.endColumn,
             },
           }));
           
-          return { suggestions };
+          // Return suggestions without setting 'incomplete' flag
+          // This allows Monaco's default providers to also contribute
+          return { 
+            suggestions,
+            incomplete: false
+          };
         },
       });
     });
