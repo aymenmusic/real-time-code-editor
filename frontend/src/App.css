@@ -529,7 +529,15 @@ body {
 }
 
 .user-name {
-  font-size: 0.875rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: default;
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.user-name:hover {
+  opacity: 0.75;
 }
 
 .no-users {
