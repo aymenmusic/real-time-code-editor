@@ -2,6 +2,20 @@
 
 A collaborative code editor with real-time collaboration features, code execution, and chat functionality.
 
+## Features
+
+- **Real-time Collaboration**: Multiple users can edit code simultaneously
+- **Multi-language Support**: Execute code in Python and JavaScript
+- **Code Execution**: Run code with output displayed in a terminal
+- **Live Chat**: Communicate with collaborators in real-time
+- **Syntax Highlighting**: Monaco editor with IntelliSense
+- **User Authentication**: Secure login and registration system
+
+## Supported Languages
+
+- **Python** - Requires Python 3.x installed
+- **JavaScript** - Requires Node.js installed
+
 ## Security Setup
 
 This application uses environment variables for secure configuration. Follow these steps to set up your environment securely:
