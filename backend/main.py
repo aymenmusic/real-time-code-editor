@@ -84,7 +84,7 @@ app.include_router(auth.router)
 
 class CodeExecution(BaseModel):
     code: str = Field(..., max_length=50000, min_length=1)
-    language: str = Field(default="python", pattern="^(python)$")
+    language: str = Field(default="python", pattern="^(python|javascript)$")
 
     @validator('code')
     def validate_code(cls, v):
@@ -118,22 +118,30 @@ async def execute_code(
 ):
     # Works for both authenticated and unauthenticated users
     # If current_user is None, it's an anonymous user
-    if execution.language != "python":
-        raise HTTPException(
-            status_code=400, detail=f"Language {execution.language} not supported yet")
 
     # Create a unique ID for this execution
     execution_id = str(uuid.uuid4())
 
+    # Determine file extension and command based on language
+    if execution.language == "python":
+        file_suffix = '.py'
+        command = ["python"]
+    elif execution.language == "javascript":
+        file_suffix = '.js'
+        command = ["node"]
+    else:
+        raise HTTPException(
+            status_code=400, detail=f"Language {execution.language} not supported yet")
+
     # Create a temporary file to store the code
-    with tempfile.NamedTemporaryFile(suffix='.py', delete=False) as temp_file:
+    with tempfile.NamedTemporaryFile(suffix=file_suffix, delete=False) as temp_file:
         temp_filename = temp_file.name
         temp_file.write(execution.code.encode())
 
     try:
         # Execute the code with a timeout
         result = subprocess.run(
-            ["python", temp_filename],
+            command + [temp_filename],
             capture_output=True,
             text=True,
             timeout=10  # 10 second timeout

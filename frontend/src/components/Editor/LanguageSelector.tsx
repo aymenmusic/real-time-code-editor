@@ -2,6 +2,7 @@ import { useEditorStore } from '../../store/editorStore';
 
 const languages = [
   { id: 'python', name: 'Python' },
+  { id: 'javascript', name: 'JavaScript' },
 ];
 
 const LanguageSelector = () => {
