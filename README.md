@@ -84,3 +84,63 @@ python run.py
 cd frontend
 npm run dev
 ```
+
+## Testing
+
+This project includes comprehensive unit tests for both frontend and backend to ensure code quality and reliability.
+
+### Running Tests
+
+**Frontend Tests (Vitest):**
+
+```bash
+cd frontend
+npm test                    # Run all tests
+npm run test:ui            # Run with interactive UI
+npm run test:coverage      # Generate coverage report
+```
+
+**Backend Tests (pytest):**
+
+```bash
+cd backend
+pytest                     # Run all tests
+pytest -v                  # Verbose output
+pytest --cov=.            # With coverage
+```
+
+### Test Coverage
+
+- ✅ **Frontend**: Editor store, state management, language switching
+- ✅ **Backend**: Authentication API, password hashing, user registration/login
+- 📖 **Documentation**: See [TESTING.md](./TESTING.md) for detailed testing guide
+- 🚀 **Quick Start**: See [TESTING_SETUP.md](./TESTING_SETUP.md) for setup instructions
+
+Tests demonstrate professional development practices perfect for portfolio projects!
+
+## Tech Stack
+
+### Frontend
+
+- React 19 + TypeScript
+- Monaco Editor (VS Code editor)
+- Zustand (State management)
+- Vite (Build tool)
+- Vitest (Testing)
+
+### Backend
+
+- FastAPI (Python web framework)
+- WebSockets (Real-time communication)
+- SQLAlchemy (ORM)
+- PostgreSQL (Database)
+- JWT Authentication
+- pytest (Testing)
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+MIT License - feel free to use this project for your portfolio!
