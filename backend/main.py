@@ -20,10 +20,21 @@ from models.user import User
 from auth.utils import get_current_active_user, get_current_user_optional
 from websocket_manager import manager
 
-# Create database tables
-Base.metadata.create_all(bind=engine)
-
 app = FastAPI(title="Real-Time Code Editor API")
+
+# Create database tables on startup
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Create database tables when the app starts"""
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Database tables created successfully")
+    except Exception as e:
+        print(f"❌ Error creating database tables: {e}")
+        print("⚠️  App will start but database operations will fail")
+        print("🔧 Check your DATABASE_URL environment variable in Render")
 
 # Initialize rate limiter
 limiter = Limiter(key_func=get_remote_address)
