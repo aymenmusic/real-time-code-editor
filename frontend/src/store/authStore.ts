@@ -191,8 +191,13 @@ export const useAuthStore = create<AuthState>()(
         const editorStore = useEditorStore.getState();
         editorStore.setUsers([]);
         
-        // Reset code to default placeholder
-        editorStore.updateCode('# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()');
+        // Reset code for current language to default template
+        // This preserves the per-language storage system
+        const currentLanguage = editorStore.language;
+        const defaultCode = currentLanguage === 'python' 
+          ? '# Start coding here\n\ndef hello_world():\n    print("Hello, world!")\n\nhello_world()'
+          : '// Start coding here\n\nfunction helloWorld() {\n  console.log("Hello, world!");\n}\n\nhelloWorld();';
+        editorStore.updateCode(defaultCode);
         
         // Clear chat messages - dynamic import to avoid circular dependency
         import('./chatStore').then(({ useChatStore }) => {
