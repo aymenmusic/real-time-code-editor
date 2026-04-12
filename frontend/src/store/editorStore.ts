@@ -8,9 +8,15 @@ export interface User {
   color: string;
 }
 
+// Map of language -> code content
+type CodeByLanguage = {
+  [language: string]: string;
+};
+
 interface EditorState {
   code: string;
   language: string;
+  codeByLanguage: CodeByLanguage; // NEW: Store code for each language separately
   editor: editor.IStandaloneCodeEditor | null;
   isConnected: boolean;
   users: User[];
@@ -35,31 +41,48 @@ const getDefaultCode = (language: string): string => {
   }
 };
 
-// Helper function to check if code is a default template
-const isDefaultTemplate = (code: string, language: string): boolean => {
-  const trimmedCode = code.trim();
-  const defaultCode = getDefaultCode(language).trim();
-  return trimmedCode === defaultCode;
-};
-
 export const useEditorStore = create<EditorState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       code: getDefaultCode('python'),
       language: 'python',
+      codeByLanguage: {
+        python: getDefaultCode('python'),
+        javascript: getDefaultCode('javascript'),
+      },
       editor: null,
       isConnected: false,
       users: [],
       
-      updateCode: (newCode) => set({ code: newCode }),
-      
-      setLanguage: (language) => set((state) => ({
-        language,
-        // Update code to default template if switching languages and current code is a default template
-        code: isDefaultTemplate(state.code, state.language) 
-          ? getDefaultCode(language) 
-          : state.code
+      updateCode: (newCode) => set((state) => ({
+        code: newCode,
+        // Also save to the language-specific storage
+        codeByLanguage: {
+          ...state.codeByLanguage,
+          [state.language]: newCode,
+        }
       })),
+      
+      setLanguage: (newLanguage) => set((state) => {
+        // Save current code to the current language before switching
+        const updatedCodeByLanguage = {
+          ...state.codeByLanguage,
+          [state.language]: state.code,
+        };
+        
+        // Load code for the new language (or use default if not yet saved)
+        const newCode = updatedCodeByLanguage[newLanguage] || getDefaultCode(newLanguage);
+        
+        console.log(`Switching from ${state.language} to ${newLanguage}`);
+        console.log(`Saved code for ${state.language}:`, state.code.substring(0, 50) + '...');
+        console.log(`Loading code for ${newLanguage}:`, newCode.substring(0, 50) + '...');
+        
+        return {
+          language: newLanguage,
+          code: newCode,
+          codeByLanguage: updatedCodeByLanguage,
+        };
+      }),
       
       setEditor: (editor) => set({ editor }),
       
@@ -80,23 +103,25 @@ export const useEditorStore = create<EditorState>()(
     {
       name: 'editor-storage', // localStorage key
       partialize: (state) => ({ 
-        code: state.code, 
+        codeByLanguage: state.codeByLanguage, // Persist all language-specific code
         language: state.language 
-      }), // Only persist code and language, not editor instance or connection state
+      }), // Don't persist 'code' directly - it's derived from codeByLanguage
       onRehydrateStorage: () => (state) => {
-        // After loading from localStorage, ensure code matches the language
+        // After loading from localStorage, set the current code based on selected language
         if (state) {
-          // Check if the current code is a default template for a DIFFERENT language
-          // This can happen if user was using JavaScript but the code is Python boilerplate
-          const isCodeForCurrentLanguage = isDefaultTemplate(state.code, state.language);
-          const isCodeForOtherLanguage = !isCodeForCurrentLanguage && 
-            (isDefaultTemplate(state.code, 'python') || isDefaultTemplate(state.code, 'javascript'));
+          const currentLanguage = state.language || 'python';
+          // Load code for current language, or use default if not found
+          state.code = state.codeByLanguage?.[currentLanguage] || getDefaultCode(currentLanguage);
           
-          // If code is a default template for a different language, update it to match current language
-          if (isCodeForOtherLanguage) {
-            state.code = getDefaultCode(state.language);
-            console.log(`Fixed language/code mismatch: updated code to ${state.language} template`);
+          // Ensure all languages have at least default code
+          if (!state.codeByLanguage) {
+            state.codeByLanguage = {
+              python: getDefaultCode('python'),
+              javascript: getDefaultCode('javascript'),
+            };
           }
+          
+          console.log(`Restored editor state for ${currentLanguage}`);
         }
       },
     }
