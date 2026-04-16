@@ -5,7 +5,7 @@ import { useEditorStore } from './editorStore';
 interface User {
   id: number;
   email: string;
-  username: string;
+  username: string; 
   is_active: boolean;
   created_at: string;
 }
