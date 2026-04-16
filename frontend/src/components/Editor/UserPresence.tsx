@@ -1,13 +1,7 @@
-import { useEffect } from 'react';
 import { useEditorStore } from '../../store/editorStore';
 
 const UserPresence = () => {
   const { users } = useEditorStore();
-  
-  // Debug: Log users whenever they change
-  useEffect(() => {
-    console.log('UserPresence - Current users:', users);
-  }, [users]);
 
   return (
     <div className="user-presence">

@@ -73,10 +73,6 @@ export const useEditorStore = create<EditorState>()(
         // Load code for the new language (or use default if not yet saved)
         const newCode = updatedCodeByLanguage[newLanguage] || getDefaultCode(newLanguage);
         
-        console.log(`Switching from ${state.language} to ${newLanguage}`);
-        console.log(`Saved code for ${state.language}:`, state.code.substring(0, 50) + '...');
-        console.log(`Loading code for ${newLanguage}:`, newCode.substring(0, 50) + '...');
-        
         return {
           language: newLanguage,
           code: newCode,
@@ -121,7 +117,6 @@ export const useEditorStore = create<EditorState>()(
             };
           }
           
-          console.log(`Restored editor state for ${currentLanguage}`);
         }
       },
     }
