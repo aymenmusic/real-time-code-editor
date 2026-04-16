@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import { useAuthStore } from '../../store/authStore';
-import logo from '../../assets/pairspace-logo4.png';
 import '../../styles/Header.css';
 
 interface HeaderProps {
@@ -23,7 +22,9 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
     <header className="site-header">
       <div className="header-container">
         <Link to={isAuthenticated ? "/editor" : "/"} className="logo-link">
-          <img src={logo} alt="PairSpace" className="site-logo" />
+          <span className="logo-text">
+            <span className="logo-pair">Pair</span><span className="logo-space">Space</span>
+          </span>
         </Link>
         
         <div className="header-right">
