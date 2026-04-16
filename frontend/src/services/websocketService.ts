@@ -11,13 +11,11 @@ class WebSocketService {
   connect(user: { id: string; name: string; color: string }) {
     // If already connected with the same user, just return
     if (this.isConnected() && this.currentUser?.id === user.id) {
-      console.log('Already connected as same user, skipping...');
       return;
     }
 
     // If connecting or connected as different user, disconnect first
     if ((this.isConnecting || this.isConnected()) && this.currentUser?.id !== user.id) {
-      console.log('Disconnecting previous connection before reconnecting...');
       this.disconnect();
     }
 
@@ -27,13 +25,9 @@ class WebSocketService {
     // Use environment variable for WebSocket URL
     const wsBaseUrl = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
     const wsUrl = `${wsBaseUrl}/ws/${this.roomId}`;
-    
-    console.log('Connecting to WebSocket:', wsUrl);
-    
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('WebSocket connected');
       this.isConnecting = false;
       this.reconnectAttempts = 0;
       
@@ -51,8 +45,6 @@ class WebSocketService {
     this.ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log('WebSocket message received:', data);
-        
         // Call registered handlers for this message type
         const handlers = this.messageHandlers.get(data.type) || [];
         handlers.forEach(handler => handler(data));
@@ -66,14 +58,12 @@ class WebSocketService {
     };
 
     this.ws.onclose = () => {
-      console.log('WebSocket disconnected');
       this.ws = null;
       this.isConnecting = false;
       
       // Attempt to reconnect only if we have user info
       if (this.currentUser && this.reconnectAttempts < this.maxReconnectAttempts) {
         this.reconnectAttempts++;
-        console.log(`Reconnecting... Attempt ${this.reconnectAttempts}`);
         setTimeout(() => {
           if (this.currentUser) {
             this.connect(this.currentUser);

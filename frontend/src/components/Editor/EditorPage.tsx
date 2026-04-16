@@ -20,12 +20,9 @@ const EditorPage = () => {
   // Connect to WebSocket and handle real-time events
   useEffect(() => {
     if (!isAuthenticated || !user) {
-      console.log('Waiting for authentication... isAuthenticated:', isAuthenticated, 'user:', user);
       return;
     }
 
-    console.log('Setting up WebSocket connection...');
-    
     const editorStore = useEditorStore.getState();
     const chatStore = useChatStore.getState();
     
@@ -46,7 +43,6 @@ const EditorPage = () => {
 
     // Set up message handlers BEFORE connecting
     const handleUsersList = (data: any) => {
-      console.log('Users list received:', data.users);
       // Make sure you're in the list (in case the optimistic add was cleared)
       const usersWithSelf = data.users.some((u: any) => u.id === currentUser.id) 
         ? data.users 
@@ -55,12 +51,10 @@ const EditorPage = () => {
     };
 
     const handleUserJoined = (data: any) => {
-      console.log('User joined:', data.user);
       editorStore.addUser(data.user);
     };
 
     const handleUserLeft = (data: any) => {
-      console.log('User left:', data.user);
       // Don't remove yourself from the list - this prevents flickering on refresh
       // When you refresh, you receive your own user_left event before reconnecting
       if (data.user.id !== currentUser.id) {
@@ -69,13 +63,11 @@ const EditorPage = () => {
     };
 
     const handleCodeChange = (data: any) => {
-      console.log('Code change from:', data.userName);
       // Update code without triggering another WebSocket send
       editorStore.updateCode(data.code);
     };
 
     const handleChatMessage = (data: any) => {
-      console.log('Chat message received:', data.message);
       chatStore.addMessage({
         userId: data.message.userId,
         userName: data.message.userName,
@@ -84,7 +76,6 @@ const EditorPage = () => {
     };
 
     const handleLanguageChange = (data: any) => {
-      console.log('Language changed to:', data.language);
       editorStore.setLanguage(data.language);
     };
 
@@ -103,7 +94,6 @@ const EditorPage = () => {
 
     // Cleanup function - DON'T disconnect, just remove handlers
     return () => {
-      console.log('Cleaning up message handlers (keeping connection)...');
       websocketService.off('users_list', handleUsersList);
       websocketService.off('user_joined', handleUserJoined);
       websocketService.off('user_left', handleUserLeft);
@@ -118,21 +108,6 @@ const EditorPage = () => {
     };
   }, [isAuthenticated, user]);
   
-  // Log code changes
-  useEffect(() => {
-    console.log('Setting up code change logging...');
-    
-    // Subscribe to code changes
-    const unsubscribe = useEditorStore.subscribe((state) => {
-      // Just log code changes for now
-      console.log('Code changed, length:', state.code.length);
-    });
-    
-    return () => {
-      unsubscribe();
-    };
-  }, []);
-
   return (
     <div className={`editor-page ${isDarkMode ? 'dark-mode' : 'light-mode'}`}>
       <Header showNavLinks={true} isEditorPage={true} />
