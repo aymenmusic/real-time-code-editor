@@ -299,6 +299,19 @@
   border-bottom: 1px solid var(--border-color);
 }
 
+.mobile-menu-run {
+  padding: 0.75rem 0 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Make the run-button fill the mobile menu run section */
+.mobile-menu-run .run-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.375rem;
+}
+
 /* ── Responsive breakpoints ──────────────────────── */
 @media (max-width: 768px) {
   .site-header {

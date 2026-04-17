@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
+import RunButton from '../Editor/RunButton';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/Header.css';
 
@@ -94,6 +95,12 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
 
         {/* Mobile dropdown — inside header so it drops from position:absolute */}
         <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+          {isEditorPage && (
+            <div className="mobile-menu-run">
+              <RunButton />
+            </div>
+          )}
+
           {showNavLinks && isEditorPage && (
             <div className="mobile-menu-item">
               <LanguageSelector />
