@@ -79,6 +79,62 @@
   padding: 0;
 }
 
+/* ─── Theme transition ──────────────────────────────────────────────────────
+   Primary: View Transitions API (Chrome/Edge/Safari 18+)
+   The browser captures GPU screenshots of the before & after states and
+   cross-fades between them at the compositor level. Every pixel changes on
+   exactly the same frame — zero element-level timing mismatch.
+
+   Fallback: CSS color transitions (Firefox and older browsers)
+   Elements animate independently which can be slightly staggered, but it's
+   still far better than an instant hard-cut.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* View Transitions API cross-fade */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 280ms;
+    animation-timing-function: ease;
+  }
+}
+
+/* Disable VTA animation if user prefers reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* CSS transition fallback — only active when View Transitions API is absent
+   (targets Firefox and legacy browsers via @supports) */
+@supports not (view-transition-name: none) {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, color, border-color;
+    transition-duration: 250ms;
+    transition-timing-function: ease;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      transition-duration: 0ms !important;
+    }
+  }
+
+  /* Monaco editor opts out — its nodes update too frequently */
+  .monaco-editor,
+  .monaco-editor *,
+  .monaco-editor *::before,
+  .monaco-editor *::after {
+    transition: none !important;
+  }
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   color: var(--text-color);
