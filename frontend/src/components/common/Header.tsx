@@ -78,63 +78,66 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
             )}
           </div>
 
-          {/* Mobile: dark mode toggle + hamburger */}
+          {/* Mobile: dark mode toggle + hamburger.
+              Hamburger is hidden on pages with no nav links (e.g. Login, Register). */}
           <div className="mobile-header-right">
             <DarkModeToggle />
-            <button
-              className={`hamburger${menuOpen ? ' open' : ''}`}
-              onClick={() => setMenuOpen((prev) => !prev)}
-              aria-label="Toggle menu"
-            >
-              <span />
-              <span />
-              <span />
-            </button>
+            {showNavLinks && (
+              <button
+                className={`hamburger${menuOpen ? ' open' : ''}`}
+                onClick={() => setMenuOpen((prev) => !prev)}
+                aria-label="Toggle menu"
+              >
+                <span />
+                <span />
+                <span />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Mobile dropdown — inside header so it drops from position:absolute */}
-        <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
-          {isEditorPage && (
-            <div className="mobile-menu-run">
-              <RunButton />
-            </div>
-          )}
+        {/* Mobile dropdown — only rendered when there are nav links to show */}
+        {showNavLinks && (
+          <div className={`mobile-menu${menuOpen ? ' open' : ''}`}>
+            {isEditorPage && (
+              /* Tapping Run Code closes the menu instantly via event bubbling,
+                 so the terminal is fully visible when results arrive. */
+              <div className="mobile-menu-run" onClick={closeMenu}>
+                <RunButton />
+              </div>
+            )}
 
-          {showNavLinks && isEditorPage && (
-            <div className="mobile-menu-item">
-              <LanguageSelector />
-            </div>
-          )}
+            {isEditorPage && (
+              <div className="mobile-menu-item">
+                <LanguageSelector />
+              </div>
+            )}
 
-          {showNavLinks && isAuthenticated && !isEditorPage && (
-            <Link to="/editor" className="mobile-menu-link" onClick={closeMenu}>
-              Editor
-            </Link>
-          )}
+            {isAuthenticated && !isEditorPage && (
+              <Link to="/editor" className="mobile-menu-link" onClick={closeMenu}>
+                Editor
+              </Link>
+            )}
 
-          {showNavLinks && (
-            <>
-              {isAuthenticated ? (
-                <>
-                  <span className="mobile-menu-username">{user?.username}</span>
-                  <button onClick={handleLogout} className="mobile-menu-logout">
-                    Log Out
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login" className="mobile-menu-link" onClick={closeMenu}>
-                    Log In
-                  </Link>
-                  <Link to="/register" className="mobile-menu-link mobile-menu-register" onClick={closeMenu}>
-                    Sign Up
-                  </Link>
-                </>
-              )}
-            </>
-          )}
-        </div>
+            {isAuthenticated ? (
+              <>
+                <span className="mobile-menu-username">{user?.username}</span>
+                <button onClick={handleLogout} className="mobile-menu-logout">
+                  Log Out
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" className="mobile-menu-link" onClick={closeMenu}>
+                  Log In
+                </Link>
+                <Link to="/register" className="mobile-menu-link mobile-menu-register" onClick={closeMenu}>
+                  Sign Up
+                </Link>
+              </>
+            )}
+          </div>
+        )}
       </header>
     </>
   );
