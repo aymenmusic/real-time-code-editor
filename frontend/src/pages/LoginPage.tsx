@@ -1,5 +1,5 @@
 import { useState, FormEvent } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
 import Header from '../components/common/Header';
@@ -9,19 +9,26 @@ const LoginPage = () => {
   const { isDarkMode } = useThemeStore();
   const { login, isLoading, error, clearError } = useAuthStore();
   const navigate = useNavigate();
-  
+  const location = useLocation();
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  
+
+  // Destination to return to after login (set by RequireAuth when a
+  // user pastes a /editor/:roomId link while not signed in).
+  const from = (location.state as { from?: Location })?.from;
+  const isRoomInvite = from?.pathname?.startsWith('/editor/');
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     clearError();
-    
+
     await login(username, password);
-    
-    // If login was successful, redirect to editor
+
+    // On success, send them back to the room they tried to join,
+    // or to a fresh editor session if they came directly to /login.
     if (useAuthStore.getState().isAuthenticated) {
-      navigate('/editor');
+      navigate(from?.pathname || '/editor', { replace: true });
     }
   };
 
@@ -30,51 +37,66 @@ const LoginPage = () => {
       <Header showNavLinks={false} />
       <div className="auth-container">
         <h1>Log In</h1>
-        <p className="auth-subtitle">Welcome back! Log in to your account</p>
-        
+
+        {/* Room invite banner — shown when redirected from a shared room link */}
+        {isRoomInvite && (
+          <div className="auth-invite-banner">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+            <span>You've been invited to a collaborative session. Sign in to join the room.</span>
+          </div>
+        )}
+
+        {!isRoomInvite && (
+          <p className="auth-subtitle">Welcome back! Log in to your account</p>
+        )}
+
         {error && (
           <div className="auth-error">
             {error}
           </div>
         )}
-        
+
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="username">Username</label>
-            <input 
-              type="text" 
-              id="username" 
+            <input
+              type="text"
+              id="username"
               placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
             />
           </div>
-          
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
-            <input 
-              type="password" 
-              id="password" 
+            <input
+              type="password"
+              id="password"
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
           </div>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="auth-submit-button"
             disabled={isLoading}
           >
             {isLoading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
-        
+
         <div className="auth-links">
           <p>
-            Don't have an account? <Link to="/register">Create Account</Link>
+            Don't have an account? <Link to="/register" state={location.state}>Create Account</Link>
           </p>
           <Link to="/" className="back-link">Back to Home</Link>
         </div>

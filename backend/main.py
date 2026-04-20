@@ -253,6 +253,23 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                             exclude=websocket
                         )
 
+                    elif message_type == "cursor_move":
+                        # Broadcast cursor position / selection to all OTHER users in the room.
+                        # The sender already sees their own cursor natively so we exclude them.
+                        await manager.broadcast_to_room(
+                            room_id,
+                            {
+                                "type": "cursor_move",
+                                "userId":     data.get("userId"),
+                                "userName":   data.get("userName"),
+                                "color":      data.get("color"),
+                                "lineNumber": data.get("lineNumber"),
+                                "column":     data.get("column"),
+                                "selection":  data.get("selection"),
+                            },
+                            exclude=websocket
+                        )
+
                 except WebSocketDisconnect:
                     break
                 except json.JSONDecodeError:

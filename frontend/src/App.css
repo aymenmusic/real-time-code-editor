@@ -512,7 +512,7 @@ body {
   transform: translateX(26px);
 }
 
-.dark-mode-toggle svg {
+.dark-mode-toggle svg { 
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -585,17 +585,28 @@ body {
 .user-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
 }
 
-.user-color {
-  width: 12px;
-  height: 12px;
+/* Avatar circle with 2-letter initials */
+.user-avatar {
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.03em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+  user-select: none;
 }
 
 .user-name {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 600;
   cursor: default;
   opacity: 1;
@@ -604,6 +615,17 @@ body {
 
 .user-name:hover {
   opacity: 0.75;
+}
+
+/* "You" pill badge beside the current user */
+.user-you-badge {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-light);
+  background-color: var(--border-color);
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  white-space: nowrap;
 }
 
 .no-users {
@@ -667,6 +689,21 @@ body {
 
 .message.own-message .message-header {
   color: rgba(255, 255, 255, 0.9);
+}
+
+/* Flex wrapper for the sender dot + username */
+.message-sender {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Small colored circle matching the sender's presence color */
+.message-sender-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .message-user {

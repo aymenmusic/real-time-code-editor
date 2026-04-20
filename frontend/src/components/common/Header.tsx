@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import RunButton from '../Editor/RunButton';
+import ShareButton from '../Editor/ShareButton';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/Header.css';
 
@@ -17,9 +18,12 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
     setMenuOpen(false);
+    // Navigate BEFORE clearing auth state so RequireAuth is no longer in the
+    // tree when isAuthenticated flips to false — prevents the logout flow from
+    // triggering the "invited to a room" redirect to /login.
     navigate('/');
+    logout();
   };
 
   const closeMenu = () => setMenuOpen(false);
@@ -56,6 +60,9 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                 )}
               </nav>
             )}
+
+            {/* Share button — only on the editor page (desktop) */}
+            {isEditorPage && <ShareButton />}
 
             <DarkModeToggle />
 
@@ -110,6 +117,13 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
             {isEditorPage && (
               <div className="mobile-menu-item">
                 <LanguageSelector />
+              </div>
+            )}
+
+            {/* Share button in mobile menu — closes the drawer after copying */}
+            {isEditorPage && (
+              <div className="mobile-menu-item" onClick={closeMenu}>
+                <ShareButton />
               </div>
             )}
 

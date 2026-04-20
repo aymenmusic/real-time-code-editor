@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import CodeEditor from './CodeEditor';
 import UserPresence from './UserPresence';
 import Chat from './Chat';
@@ -12,6 +13,7 @@ import { useChatStore } from '../../store/chatStore';
 import { websocketService } from '../../services/websocketService';
 
 const EditorPage = () => {
+  const { roomId } = useParams<{ roomId: string }>();
   const { isDarkMode } = useThemeStore();
 
   // Get authentication state
@@ -26,8 +28,28 @@ const EditorPage = () => {
     const editorStore = useEditorStore.getState();
     const chatStore = useChatStore.getState();
     
-    // Assign color from a hardcoded list based on user ID
-    const colors = ['#354889', '#9CC8EA', '#4D9EE8', '#578CD3', '#384B8C'];
+    // Point the WebSocket singleton at this room before connecting
+    if (roomId) {
+      websocketService.setRoom(roomId);
+    }
+
+    // 12 perceptually-distinct colors spanning the full hue range.
+    // Chosen from the Tailwind v2 palette so they read well on both
+    // light and dark backgrounds.
+    const colors = [
+      '#e53e3e', // red
+      '#ed8936', // orange
+      '#d69e2e', // amber
+      '#38a169', // green
+      '#319795', // teal
+      '#3182ce', // blue
+      '#5a67d8', // indigo
+      '#805ad5', // purple
+      '#d53f8c', // pink
+      '#48bb78', // mint
+      '#4299e1', // sky
+      '#f687b3', // rose
+    ];
     const colorIndex = parseInt(user.id.toString()) % colors.length;
     const userColor = colors[colorIndex];
     
@@ -59,6 +81,8 @@ const EditorPage = () => {
       // When you refresh, you receive your own user_left event before reconnecting
       if (data.user.id !== currentUser.id) {
         editorStore.removeUser(data.user.id);
+        // Also clear their cursor decoration so it doesn't linger
+        editorStore.removeUserCursor(data.user.id);
       }
     };
 
@@ -79,6 +103,20 @@ const EditorPage = () => {
       editorStore.setLanguage(data.language);
     };
 
+    // Cursor move: update the live position for a remote user
+    const handleCursorMove = (data: any) => {
+      // Ignore our own cursor broadcast (we see it natively in the editor)
+      if (data.userId === currentUser.id) return;
+      editorStore.setUserCursor({
+        userId: data.userId,
+        userName: data.userName,
+        color: data.color,
+        lineNumber: data.lineNumber,
+        column: data.column,
+        selection: data.selection,
+      });
+    };
+
     // Register handlers
     websocketService.on('users_list', handleUsersList);
     websocketService.on('user_joined', handleUserJoined);
@@ -86,6 +124,7 @@ const EditorPage = () => {
     websocketService.on('code_change', handleCodeChange);
     websocketService.on('chat_message', handleChatMessage);
     websocketService.on('language_change', handleLanguageChange);
+    websocketService.on('cursor_move', handleCursorMove);
 
     // Connect to WebSocket (will skip if already connected)
     websocketService.connect(currentUser);
@@ -100,10 +139,12 @@ const EditorPage = () => {
       websocketService.off('code_change', handleCodeChange);
       websocketService.off('chat_message', handleChatMessage);
       websocketService.off('language_change', handleLanguageChange);
-      
-      // Clear chat messages when leaving editor
+      websocketService.off('cursor_move', handleCursorMove);
+
+      // Clear chat messages and all cursor decorations when leaving
       chatStore.clearMessages();
-      
+      editorStore.clearUserCursors();
+
       // DON'T disconnect here - let it stay connected
     };
   }, [isAuthenticated, user]);

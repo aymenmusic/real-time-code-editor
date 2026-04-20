@@ -1,5 +1,5 @@
 import './App.css'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import EditorPage from './components/Editor/EditorPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
@@ -7,6 +7,22 @@ import RegisterPage from './pages/RegisterPage'
 import { useThemeStore } from './store/themeStore'
 import { useAuthStore } from './store/authStore'
 import { useEffect, useRef, useState } from 'react'
+
+/**
+ * Wraps a route element and redirects unauthenticated, non-guest visitors
+ * to /login, preserving the intended destination in router state so the
+ * login page can bounce them back to the room after they sign in.
+ */
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
+  const { isAuthenticated, isGuest } = useAuthStore();
+  const location = useLocation();
+
+  if (!isAuthenticated && !isGuest) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
 
 function App() {
   const { isDarkMode } = useThemeStore();
@@ -107,18 +123,32 @@ function App() {
               element={isAuthenticated ? <Navigate to="/editor" replace /> : <RegisterPage />} 
             />
             {/*
-              Editor page — accessible to authenticated users OR guests who
-              clicked "Try Without Account".  isGuest lives in Zustand..so
-              it is fully reactive: the route re-evaluates the moment
-              setGuestAccess(true) fires, with no sessionStorage timing risk.
+              /editor (no room ID) → generate a fresh room ID and redirect.
+              This is the "create new room" entry point used by the landing
+              page and the authenticated-user redirect.
             */}
-            <Route 
-              path="/editor" 
+            <Route
+              path="/editor"
               element={
                 isAuthenticated || isGuest
-                  ? <EditorPage /> 
+                  ? <Navigate to={`/editor/${crypto.randomUUID().replace(/-/g, '').slice(0, 8)}`} replace />
                   : <Navigate to="/" replace />
-              } 
+              }
+            />
+
+            {/*
+              /editor/:roomId — join a specific collaborative room.
+              RequireAuth redirects unauthenticated visitors to /login while
+              preserving this URL in router state so the login page can send
+              them straight back to the room after signing in.
+            */}
+            <Route
+              path="/editor/:roomId"
+              element={
+                <RequireAuth>
+                  <EditorPage />
+                </RequireAuth>
+              }
             />
             
             {/* Catch-all route - redirect to landing page */}

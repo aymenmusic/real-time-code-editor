@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useChatStore } from '../../store/chatStore';
 import { useAuthStore } from '../../store/authStore';
+import { useEditorStore } from '../../store/editorStore';
 import { websocketService } from '../../services/websocketService';
 
 const Chat = () => {
@@ -43,6 +44,8 @@ const Chat = () => {
 
   // Check if user is authenticated
   const { isAuthenticated } = useAuthStore();
+  // Used to look up each sender's color from the connected users list
+  const { users } = useEditorStore();
 
   return (
     <div className="chat-container">
@@ -54,18 +57,33 @@ const Chat = () => {
         {messages.length === 0 ? (
           <div className="no-messages">No messages yet</div>
         ) : (
-          messages.map((msg) => (
-            <div 
-              key={msg.id} 
-              className={`message ${msg.userId === useAuthStore.getState().user?.id.toString() ? 'own-message' : ''}`}
-            >
-              <div className="message-header">
-                <span className="message-user">{msg.userName}</span>
-                <span className="message-time">{formatTime(msg.timestamp)}</span>
+          messages.map((msg) => {
+            const isOwn = msg.userId === useAuthStore.getState().user?.id.toString();
+            // Look up the sender's presence color; fall back gracefully if not found
+            const senderColor = users.find(u => u.id === msg.userId)?.color;
+
+            return (
+              <div
+                key={msg.id}
+                className={`message ${isOwn ? 'own-message' : ''}`}
+              >
+                <div className="message-header">
+                  <div className="message-sender">
+                    {/* Colored identity dot — visible on other users' messages only */}
+                    {!isOwn && senderColor && (
+                      <span
+                        className="message-sender-dot"
+                        style={{ backgroundColor: senderColor }}
+                      />
+                    )}
+                    <span className="message-user">{msg.userName}</span>
+                  </div>
+                  <span className="message-time">{formatTime(msg.timestamp)}</span>
+                </div>
+                <div className="message-text">{msg.text}</div>
               </div>
-              <div className="message-text">{msg.text}</div>
-            </div>
-          ))
+            );
+          })
         )}
         <div ref={messagesEndRef} />
       </div>

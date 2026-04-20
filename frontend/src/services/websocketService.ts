@@ -1,6 +1,6 @@
 class WebSocketService {
   private ws: WebSocket | null = null;
-  private roomId: string = 'main';
+  private roomId: string = 'main'; // overridden via setRoom() before connect()
   private reconnectAttempts: number = 0;
   private maxReconnectAttempts: number = 5;
   private reconnectDelay: number = 2000;
@@ -128,12 +128,55 @@ class WebSocketService {
     });
   }
 
+  // Send cursor position and optional selection to collaborators
+  sendCursorMove(data: {
+    lineNumber: number;
+    column: number;
+    selection?: {
+      startLineNumber: number;
+      startColumn: number;
+      endLineNumber: number;
+      endColumn: number;
+    };
+  }) {
+    if (!this.currentUser) return;
+    this.send({
+      type: 'cursor_move',
+      userId: this.currentUser.id,
+      userName: this.currentUser.name,
+      color: this.currentUser.color,
+      ...data,
+    });
+  }
+
   // Send language change
   sendLanguageChange(language: string) {
     this.send({
       type: 'language_change',
       language
     });
+  }
+
+  /** Switch to a different room. Disconnects any existing connection so the
+   *  next call to connect() opens a fresh socket to the new room. */
+  setRoom(roomId: string) {
+    if (this.roomId === roomId) return; // already in this room
+    this.roomId = roomId;
+    // Force reconnect on next connect() call
+    if (this.isConnected() || this.isConnecting) {
+      const user = this.currentUser;
+      this.disconnect();
+      if (user) {
+        // Re-establish the maxReconnectAttempts guard lifted by disconnect()
+        this.reconnectAttempts = 0;
+        this.currentUser = user;
+        this.connect(user);
+      }
+    }
+  }
+
+  getRoomId(): string {
+    return this.roomId;
   }
 
   isConnected(): boolean {
