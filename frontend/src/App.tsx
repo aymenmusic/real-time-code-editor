@@ -28,6 +28,19 @@ function App() {
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
   
+  // Sync dark/light class to <html> so body's background-color CSS variable
+  // resolves correctly when content scrolls past the .app container boundary.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark-mode');
+      root.classList.remove('light-mode');
+    } else {
+      root.classList.add('light-mode');
+      root.classList.remove('dark-mode');
+    }
+  }, [isDarkMode]);
+
   // Prevent default browser save dialog when pressing CTRL+S or CMD+S
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
