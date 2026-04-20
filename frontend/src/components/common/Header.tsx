@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import RunButton from '../Editor/RunButton';
+import ShareButton from '../Editor/ShareButton';
 import { useAuthStore } from '../../store/authStore';
 import '../../styles/Header.css';
 
@@ -13,13 +14,21 @@ interface HeaderProps {
 
 const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
   const { isAuthenticated, logout, user } = useAuthStore();
-  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
-    logout();
     setMenuOpen(false);
-    navigate('/');
+    logout();
+    // Use a browser-native redirect instead of React Router's navigate().
+    // Zustand's useSyncExternalStore triggers a synchronous React re-render
+    // the instant logout() sets isAuthenticated=false. If the URL is still
+    // /editor/:roomId at that point, RequireAuth fires and redirects to
+    // /login with the room as "from" state — before navigate() can run.
+    // window.location.replace() bypasses React's render pipeline entirely,
+    // so RequireAuth never gets a chance to see the stale URL.
+    // For a logout, a full-page navigation is also desirable because it
+    // flushes all in-memory state cleanly.
+    window.location.replace('/');
   };
 
   const closeMenu = () => setMenuOpen(false);
@@ -56,6 +65,9 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
                 )}
               </nav>
             )}
+
+            {/* Share button — only on the editor page (desktop) */}
+            {isEditorPage && <ShareButton />}
 
             <DarkModeToggle />
 
@@ -110,6 +122,13 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
             {isEditorPage && (
               <div className="mobile-menu-item">
                 <LanguageSelector />
+              </div>
+            )}
+
+            {/* Share button in mobile menu — closes the drawer after copying */}
+            {isEditorPage && (
+              <div className="mobile-menu-item" onClick={closeMenu}>
+                <ShareButton />
               </div>
             )}
 

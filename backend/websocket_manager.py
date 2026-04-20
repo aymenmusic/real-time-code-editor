@@ -41,23 +41,27 @@ class ConnectionManager:
         # Store/update user info in room
         self.room_users[room_id][user_id] = user_info
 
-        # Only notify room about new user if it's their first connection
+        # Always broadcast the authoritative users list to EVERY connection in
+        # the room (including the new one) so no client ever misses an update.
+        # This replaces the old "user_joined delta to existing + users_list to
+        # new" pattern which had a race condition if the delta message was lost.
         if is_new_user:
+            current_users = list(self.room_users[room_id].values())
             await self.broadcast_to_room(
                 room_id,
                 {
-                    "type": "user_joined",
-                    "user": user_info
-                },
-                exclude=websocket
+                    "type": "users_list",
+                    "users": current_users
+                }
+                # No exclude — everyone gets the fresh list
             )
-
-        # Send current UNIQUE users list to the new connection
-        current_users = list(self.room_users[room_id].values())
-        await websocket.send_json({
-            "type": "users_list",
-            "users": current_users
-        })
+        else:
+            # Reconnect of an existing tab: send only to this socket
+            current_users = list(self.room_users[room_id].values())
+            await websocket.send_json({
+                "type": "users_list",
+                "users": current_users
+            })
 
     def disconnect(self, websocket: WebSocket, room_id: str):
         """Remove a WebSocket connection from room"""

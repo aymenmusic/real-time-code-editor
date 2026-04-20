@@ -8,6 +8,29 @@ export interface User {
   color: string;
 }
 
+export interface GuideCursorToast {
+  /** Name of the user who sent the guide */
+  fromUserName: string;
+  /** Brand color of that user (for the colored accent) */
+  fromUserColor: string;
+  lineNumber: number;
+}
+
+export interface UserCursor {
+  userId: string;
+  userName: string;
+  color: string;
+  lineNumber: number;
+  column: number;
+  /** Present only when the user has an active non-empty selection */
+  selection?: {
+    startLineNumber: number;
+    startColumn: number;
+    endLineNumber: number;
+    endColumn: number;
+  };
+}
+
 // Map of language -> code content
 type CodeByLanguage = {
   [language: string]: string;
@@ -16,10 +39,12 @@ type CodeByLanguage = {
 interface EditorState {
   code: string;
   language: string;
-  codeByLanguage: CodeByLanguage; // NEW: Store code for each language separately
+  codeByLanguage: CodeByLanguage;
   editor: editor.IStandaloneCodeEditor | null;
   isConnected: boolean;
   users: User[];
+  /** Live cursor positions of all REMOTE users (keyed by userId). */
+  userCursors: Record<string, UserCursor>;
   updateCode: (newCode: string) => void;
   setLanguage: (language: string) => void;
   setEditor: (editor: editor.IStandaloneCodeEditor | null) => void;
@@ -27,6 +52,12 @@ interface EditorState {
   setUsers: (users: User[]) => void;
   addUser: (user: User) => void;
   removeUser: (userId: string) => void;
+  setUserCursor: (cursor: UserCursor) => void;
+  removeUserCursor: (userId: string) => void;
+  clearUserCursors: () => void;
+  /** Transient toast shown when another user guides your cursor. null = hidden. */
+  guideCursorToast: GuideCursorToast | null;
+  setGuideCursorToast: (toast: GuideCursorToast | null) => void;
 }
 
 // Default code templates for each language
@@ -91,10 +122,29 @@ export const useEditorStore = create<EditorState>()(
           users: [...state.users.filter(u => u.id !== user.id), user]
         })),
       
-      removeUser: (userId) => 
+      removeUser: (userId) =>
         set((state) => ({
-          users: state.users.filter(user => user.id !== userId)
+          users: state.users.filter(user => user.id !== userId),
         })),
+
+      userCursors: {},
+
+      setUserCursor: (cursor) =>
+        set((state) => ({
+          userCursors: { ...state.userCursors, [cursor.userId]: cursor },
+        })),
+
+      removeUserCursor: (userId) =>
+        set((state) => {
+          const next = { ...state.userCursors };
+          delete next[userId];
+          return { userCursors: next };
+        }),
+
+      clearUserCursors: () => set({ userCursors: {} }),
+
+      guideCursorToast: null,
+      setGuideCursorToast: (toast) => set({ guideCursorToast: toast }),
     }),
     {
       name: 'editor-storage', // localStorage key
