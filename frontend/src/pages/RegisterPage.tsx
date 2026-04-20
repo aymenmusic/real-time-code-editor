@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
@@ -16,6 +16,10 @@ const RegisterPage = () => {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState('');
+
+  // Clear any stale error left over from a previous page (e.g. failed login
+  // attempt that leaks into the Register page via shared Zustand state).
+  useEffect(() => { clearError(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Destination to return to after registration — forwarded from LoginPage
   // when the user arrived via a shared room link.

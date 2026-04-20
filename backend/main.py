@@ -253,6 +253,33 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                             exclude=websocket
                         )
 
+                    elif message_type == "request_users":
+                        # One specific client is asking for a fresh users list
+                        # (used by the 2-second post-connect stability sync).
+                        current_users = list(
+                            manager.room_users.get(room_id, {}).values()
+                        )
+                        await websocket.send_json({
+                            "type": "users_list",
+                            "users": current_users
+                        })
+
+                    elif message_type == "guide_cursor":
+                        # Route to everyone in the room (excluding sender); receivers
+                        # filter by targetUserId on the client side.
+                        await manager.broadcast_to_room(
+                            room_id,
+                            {
+                                "type":          "guide_cursor",
+                                "targetUserId":  data.get("targetUserId"),
+                                "fromUserName":  data.get("fromUserName"),
+                                "fromUserColor": data.get("fromUserColor"),
+                                "lineNumber":    data.get("lineNumber"),
+                                "column":        data.get("column"),
+                            },
+                            exclude=websocket
+                        )
+
                     elif message_type == "cursor_move":
                         # Broadcast cursor position / selection to all OTHER users in the room.
                         # The sender already sees their own cursor natively so we exclude them.
@@ -287,10 +314,23 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
         if user_info:
             user_data = manager.disconnect(websocket, room_id)
             if user_data:
+                # Notify for cursor-cleanup (clients use this to remove decorations)
                 await manager.broadcast_to_room(
                     room_id,
                     {
                         "type": "user_left",
                         "user": user_data
+                    }
+                )
+                # Also broadcast the authoritative updated users list so every
+                # client's presence panel is guaranteed to stay in sync.
+                remaining_users = list(
+                    manager.room_users.get(room_id, {}).values()
+                )
+                await manager.broadcast_to_room(
+                    room_id,
+                    {
+                        "type": "users_list",
+                        "users": remaining_users
                     }
                 )

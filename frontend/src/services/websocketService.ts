@@ -149,6 +149,24 @@ class WebSocketService {
     });
   }
 
+  // Request a fresh users list from the server (used for post-connect sync)
+  sendRequestUsers() {
+    this.send({ type: 'request_users' });
+  }
+
+  // Guide a specific collaborator's cursor to a line/column in the editor
+  sendGuideCursor(targetUserId: string, lineNumber: number, column: number) {
+    if (!this.currentUser) return;
+    this.send({
+      type: 'guide_cursor',
+      targetUserId,
+      fromUserName:  this.currentUser.name,
+      fromUserColor: this.currentUser.color,
+      lineNumber,
+      column,
+    });
+  }
+
   // Send language change
   sendLanguageChange(language: string) {
     this.send({

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import DarkModeToggle from '../Editor/DarkModeToggle';
 import LanguageSelector from '../Editor/LanguageSelector';
 import RunButton from '../Editor/RunButton';
@@ -14,16 +14,21 @@ interface HeaderProps {
 
 const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
   const { isAuthenticated, logout, user } = useAuthStore();
-  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
   const handleLogout = () => {
     setMenuOpen(false);
-    // Navigate BEFORE clearing auth state so RequireAuth is no longer in the
-    // tree when isAuthenticated flips to false — prevents the logout flow from
-    // triggering the "invited to a room" redirect to /login.
-    navigate('/');
     logout();
+    // Use a browser-native redirect instead of React Router's navigate().
+    // Zustand's useSyncExternalStore triggers a synchronous React re-render
+    // the instant logout() sets isAuthenticated=false. If the URL is still
+    // /editor/:roomId at that point, RequireAuth fires and redirects to
+    // /login with the room as "from" state — before navigate() can run.
+    // window.location.replace() bypasses React's render pipeline entirely,
+    // so RequireAuth never gets a chance to see the stale URL.
+    // For a logout, a full-page navigation is also desirable because it
+    // flushes all in-memory state cleanly.
+    window.location.replace('/');
   };
 
   const closeMenu = () => setMenuOpen(false);

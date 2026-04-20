@@ -1,4 +1,4 @@
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
 import { useAuthStore } from '../store/authStore';
@@ -13,6 +13,9 @@ const LoginPage = () => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // Clear any stale error from a previous page (e.g. login error shown on Register).
+  useEffect(() => { clearError(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Destination to return to after login (set by RequireAuth when a
   // user pastes a /editor/:roomId link while not signed in).

@@ -899,3 +899,103 @@ body {
     max-width: 280px;
   }
 }
+
+/* ── Guide-cursor button (inside UserPresence user-item) ───────────────────── */
+
+/* Show only on hover of the row, or when in "sent" state */
+.user-item {
+  position: relative;
+}
+
+.guide-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
+  padding: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-light);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s ease, color 0.15s ease, border-color 0.15s ease,
+              background-color 0.15s ease;
+  flex-shrink: 0;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.guide-btn svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+/* Reveal on row hover */
+.user-item:hover .guide-btn {
+  opacity: 1;
+}
+
+.guide-btn:hover {
+  color: var(--primary-color);
+  border-color: var(--primary-color);
+  background-color: rgba(37, 99, 235, 0.07);
+}
+
+/* "✓ Sent" state: always visible + colored */
+.guide-btn--sent {
+  opacity: 1;
+  /* color and border-color come from inline style (user's color) */
+  background-color: transparent;
+}
+
+/* ── Guide-cursor toast ─────────────────────────────────────────────────────── */
+
+.guide-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-left: 3px solid; /* color set inline via borderLeftColor */
+  border-radius: 6px;
+  padding: 8px 14px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  font-size: 13px;
+  color: var(--text-color);
+  white-space: nowrap;
+  /* Fade-in */
+  animation: guide-toast-in 0.22s ease forwards;
+  pointer-events: none;
+}
+
+.guide-toast__icon {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.guide-toast__text strong {
+  font-weight: 600;
+}
+
+@keyframes guide-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(8px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .guide-toast {
+    bottom: 16px;
+    font-size: 12px;
+    padding: 7px 12px;
+  }
+}

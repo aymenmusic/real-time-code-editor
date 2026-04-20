@@ -8,6 +8,14 @@ export interface User {
   color: string;
 }
 
+export interface GuideCursorToast {
+  /** Name of the user who sent the guide */
+  fromUserName: string;
+  /** Brand color of that user (for the colored accent) */
+  fromUserColor: string;
+  lineNumber: number;
+}
+
 export interface UserCursor {
   userId: string;
   userName: string;
@@ -47,6 +55,9 @@ interface EditorState {
   setUserCursor: (cursor: UserCursor) => void;
   removeUserCursor: (userId: string) => void;
   clearUserCursors: () => void;
+  /** Transient toast shown when another user guides your cursor. null = hidden. */
+  guideCursorToast: GuideCursorToast | null;
+  setGuideCursorToast: (toast: GuideCursorToast | null) => void;
 }
 
 // Default code templates for each language
@@ -131,6 +142,9 @@ export const useEditorStore = create<EditorState>()(
         }),
 
       clearUserCursors: () => set({ userCursors: {} }),
+
+      guideCursorToast: null,
+      setGuideCursorToast: (toast) => set({ guideCursorToast: toast }),
     }),
     {
       name: 'editor-storage', // localStorage key

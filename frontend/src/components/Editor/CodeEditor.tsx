@@ -106,7 +106,9 @@ const CodeEditor = ({
       label.className = 'rc-label';
       Object.assign(label.style, {
         position:        'absolute',
-        zIndex:          '100',
+        // Keep below the sticky site-header (z-index: 100) so labels never
+        // clip over the navbar / hamburger menu on mobile.
+        zIndex:          '50',
         pointerEvents:   'none',
         userSelect:      'none',
         backgroundColor: cursor.color,
@@ -133,7 +135,9 @@ const CodeEditor = ({
       column: cursor.column,
     });
     if (pos) {
-      label.style.top     = `${pos.top - 18}px`;
+      // Clamp top so the label never escapes above the editor container
+      // (prevents it from floating into the header / hamburger on mobile)
+      label.style.top     = `${Math.max(2, pos.top - 18)}px`;
       label.style.left    = `${pos.left}px`;
       label.style.display = 'block';
     } else {
@@ -310,7 +314,7 @@ const CodeEditor = ({
           column:     cursor.column,
         });
         if (pos) {
-          lbl.style.top     = `${pos.top - 18}px`;
+          lbl.style.top     = `${Math.max(2, pos.top - 18)}px`;
           lbl.style.left    = `${pos.left}px`;
           lbl.style.display = 'block';
         } else {

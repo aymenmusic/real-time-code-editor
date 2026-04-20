@@ -18,7 +18,18 @@ const EditorPage = () => {
 
   // Get authentication state
   const { isAuthenticated, user } = useAuthStore();
-  
+
+  // Subscribe to the guide-cursor toast (shown when someone guides our cursor)
+  const guideCursorToast    = useEditorStore(state => state.guideCursorToast);
+  const setGuideCursorToast = useEditorStore(state => state.setGuideCursorToast);
+
+  // Auto-dismiss the toast after 3.5 s
+  useEffect(() => {
+    if (!guideCursorToast) return;
+    const timer = setTimeout(() => setGuideCursorToast(null), 3500);
+    return () => clearTimeout(timer);
+  }, [guideCursorToast, setGuideCursorToast]);
+
   // Connect to WebSocket and handle real-time events
   useEffect(() => {
     if (!isAuthenticated || !user) {
@@ -60,12 +71,9 @@ const EditorPage = () => {
     };
 
     // Optimistically add yourself to the users list immediately
-    // This prevents showing "No users connected" during the brief connection delay
     editorStore.addUser(currentUser);
 
-    // Set up message handlers BEFORE connecting
     const handleUsersList = (data: any) => {
-      // Make sure you're in the list (in case the optimistic add was cleared)
       const usersWithSelf = data.users.some((u: any) => u.id === currentUser.id) 
         ? data.users 
         : [...data.users, currentUser];
@@ -77,25 +85,21 @@ const EditorPage = () => {
     };
 
     const handleUserLeft = (data: any) => {
-      // Don't remove yourself from the list - this prevents flickering on refresh
-      // When you refresh, you receive your own user_left event before reconnecting
       if (data.user.id !== currentUser.id) {
         editorStore.removeUser(data.user.id);
-        // Also clear their cursor decoration so it doesn't linger
         editorStore.removeUserCursor(data.user.id);
       }
     };
 
     const handleCodeChange = (data: any) => {
-      // Update code without triggering another WebSocket send
       editorStore.updateCode(data.code);
     };
 
     const handleChatMessage = (data: any) => {
       chatStore.addMessage({
-        userId: data.message.userId,
+        userId:   data.message.userId,
         userName: data.message.userName,
-        text: data.message.text,
+        text:     data.message.text,
       });
     };
 
@@ -103,49 +107,79 @@ const EditorPage = () => {
       editorStore.setLanguage(data.language);
     };
 
-    // Cursor move: update the live position for a remote user
     const handleCursorMove = (data: any) => {
-      // Ignore our own cursor broadcast (we see it natively in the editor)
       if (data.userId === currentUser.id) return;
       editorStore.setUserCursor({
-        userId: data.userId,
-        userName: data.userName,
-        color: data.color,
+        userId:    data.userId,
+        userName:  data.userName,
+        color:     data.color,
         lineNumber: data.lineNumber,
-        column: data.column,
+        column:    data.column,
         selection: data.selection,
       });
     };
 
-    // Register handlers
-    websocketService.on('users_list', handleUsersList);
-    websocketService.on('user_joined', handleUserJoined);
-    websocketService.on('user_left', handleUserLeft);
-    websocketService.on('code_change', handleCodeChange);
-    websocketService.on('chat_message', handleChatMessage);
+    // Guide cursor: teleport THIS user's Monaco caret to the requested line
+    const handleGuideCursor = (data: any) => {
+      // Only apply if this message is addressed to the current user
+      if (data.targetUserId !== currentUser.id) return;
+
+      const ed = useEditorStore.getState().editor;
+      if (ed) {
+        ed.setPosition({ lineNumber: data.lineNumber, column: data.column });
+        // 1 = ScrollType.Smooth — centers the target line in the viewport
+        ed.revealLineInCenter(data.lineNumber, 1);
+        ed.focus();
+      }
+
+      // Show the named toast so the user knows who guided them and where
+      useEditorStore.getState().setGuideCursorToast({
+        fromUserName:  data.fromUserName,
+        fromUserColor: data.fromUserColor,
+        lineNumber:    data.lineNumber,
+      });
+    };
+
+    // Register all handlers
+    websocketService.on('users_list',    handleUsersList);
+    websocketService.on('user_joined',   handleUserJoined);
+    websocketService.on('user_left',     handleUserLeft);
+    websocketService.on('code_change',   handleCodeChange);
+    websocketService.on('chat_message',  handleChatMessage);
     websocketService.on('language_change', handleLanguageChange);
-    websocketService.on('cursor_move', handleCursorMove);
+    websocketService.on('cursor_move',   handleCursorMove);
+    websocketService.on('guide_cursor',  handleGuideCursor);
 
-    // Connect to WebSocket (will skip if already connected)
     websocketService.connect(currentUser);
-
     editorStore.setIsConnected(true);
 
-    // Cleanup function - DON'T disconnect, just remove handlers
-    return () => {
-      websocketService.off('users_list', handleUsersList);
-      websocketService.off('user_joined', handleUserJoined);
-      websocketService.off('user_left', handleUserLeft);
-      websocketService.off('code_change', handleCodeChange);
-      websocketService.off('chat_message', handleChatMessage);
-      websocketService.off('language_change', handleLanguageChange);
-      websocketService.off('cursor_move', handleCursorMove);
+    // ── Connection stability sync ──────────────────────────────────────────
+    // After the WebSocket opens there is a brief window where in-flight
+    // messages (e.g. a simultaneous user join) can race with the initial
+    // users_list broadcast. Two seconds after connecting — once the
+    // connection is stable — we request a fresh authoritative users list.
+    // This is a one-shot request, not polling. The basis is connection
+    // stability (a fixed, bounded post-handshake window), not user count.
+    const syncTimer = setTimeout(() => {
+      if (websocketService.isConnected()) {
+        websocketService.sendRequestUsers();
+      }
+    }, 2000);
 
-      // Clear chat messages and all cursor decorations when leaving
+    return () => {
+      clearTimeout(syncTimer);
+
+      websocketService.off('users_list',    handleUsersList);
+      websocketService.off('user_joined',   handleUserJoined);
+      websocketService.off('user_left',     handleUserLeft);
+      websocketService.off('code_change',   handleCodeChange);
+      websocketService.off('chat_message',  handleChatMessage);
+      websocketService.off('language_change', handleLanguageChange);
+      websocketService.off('cursor_move',   handleCursorMove);
+      websocketService.off('guide_cursor',  handleGuideCursor);
+
       chatStore.clearMessages();
       editorStore.clearUserCursors();
-
-      // DON'T disconnect here - let it stay connected
     };
   }, [isAuthenticated, user]);
   
@@ -171,6 +205,34 @@ const EditorPage = () => {
           <Chat />
         </div>
       </div>
+
+      {/* ── Guide-cursor toast ─────────────────────────────────────────── */}
+      {guideCursorToast && (
+        <div
+          className="guide-toast"
+          style={{ borderLeftColor: guideCursorToast.fromUserColor }}
+          role="status"
+          aria-live="polite"
+        >
+          {/* Crosshair icon */}
+          <svg className="guide-toast__icon" viewBox="0 0 16 16" fill="none"
+               stroke={guideCursorToast.fromUserColor} strokeWidth="1.5"
+               strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="8" cy="8" r="3" />
+            <line x1="8" y1="1" x2="8" y2="4" />
+            <line x1="8" y1="12" x2="8" y2="15" />
+            <line x1="1" y1="8" x2="4" y2="8" />
+            <line x1="12" y1="8" x2="15" y2="8" />
+          </svg>
+          <span className="guide-toast__text">
+            <strong style={{ color: guideCursorToast.fromUserColor }}>
+              {guideCursorToast.fromUserName}
+            </strong>
+            {' '}guided you to{' '}
+            <strong>line {guideCursorToast.lineNumber}</strong>
+          </span>
+        </div>
+      )}
     </div>
   );
 };
