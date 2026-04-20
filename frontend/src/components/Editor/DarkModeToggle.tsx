@@ -3,10 +3,28 @@ import { useThemeStore } from '../../store/themeStore';
 const DarkModeToggle = () => {
   const { isDarkMode, toggleDarkMode } = useThemeStore();
 
+  const handleToggle = () => {
+    // View Transitions API: the browser captures GPU screenshots of the
+    // before and after states and cross-fades between them. Every pixel
+    // changes on the same frame — no element-level timing mismatch.
+    // Falls back to an instant switch on browsers without support (Firefox).
+    const doc = document as Document & {
+      startViewTransition?: (cb: () => void) => void;
+    };
+
+    if (doc.startViewTransition) {
+      doc.startViewTransition(() => {
+        toggleDarkMode();
+      });
+    } else {
+      toggleDarkMode();
+    }
+  };
+
   return (
     <button 
       className={`dark-mode-toggle ${isDarkMode ? 'dark' : 'light'}`}
-      onClick={toggleDarkMode}
+      onClick={handleToggle}
       aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
       title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
     >
