@@ -89,7 +89,10 @@ body {
 .app {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  /* min-height instead of height so pages taller than the viewport
+     (landing, auth) can grow and carry the dark background with them.
+     The editor page sets its own explicit height. */
+  min-height: 100vh;
   width: 100vw;
   max-width: 100%;
   overflow-x: hidden;
@@ -99,7 +102,9 @@ body {
 .editor-page {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  /* Use 100vh explicitly so the editor always fills exactly the
+     viewport regardless of .app's min-height behaviour. */
+  height: 100vh;
   width: 100%;
 }
 
