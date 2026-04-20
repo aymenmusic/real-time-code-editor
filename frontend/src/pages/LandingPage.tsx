@@ -1,14 +1,16 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useThemeStore } from '../store/themeStore';
+import { useAuthStore } from '../store/authStore';
 import Header from '../components/common/Header';
 import '../styles/LandingPage.css';
 
 const LandingPage = () => {
   const { isDarkMode } = useThemeStore();
+  const { setGuestAccess } = useAuthStore();
   const navigate = useNavigate();
   
   const handleTryWithoutAccount = () => {
-    sessionStorage.setItem('allowGuestAccess', 'true');
+    setGuestAccess(true);
     navigate('/editor');
   };
 

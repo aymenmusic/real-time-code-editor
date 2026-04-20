@@ -14,12 +14,14 @@ interface AuthState {
   token: string | null;
   user: User | null;
   isAuthenticated: boolean;
+  isGuest: boolean;
   isLoading: boolean;
   error: string | null;
   login: (username: string, password: string) => Promise<void>;
   register: (email: string, username: string, password: string) => Promise<void>;
   fetchUserData: () => Promise<void>;
   logout: () => void;
+  setGuestAccess: (value: boolean) => void;
   clearError: () => void;
 }
 
@@ -29,6 +31,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       user: null,
       isAuthenticated: false,
+      isGuest: false,
       isLoading: false,
       error: null,
 
@@ -208,7 +211,12 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           user: null,
           isAuthenticated: false,
+          isGuest: false,
         });
+      },
+
+      setGuestAccess: (value: boolean) => {
+        set({ isGuest: value });
       },
 
       clearError: () => {
