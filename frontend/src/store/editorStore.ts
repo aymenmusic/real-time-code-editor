@@ -22,6 +22,9 @@ export interface UserCursor {
   color: string;
   lineNumber: number;
   column: number;
+  /** The language the remote user had active when they sent this cursor update.
+   *  Used to hide cursors from users who are on a different language tab. */
+  language?: string;
   /** Present only when the user has an active non-empty selection */
   selection?: {
     startLineNumber: number;

@@ -283,6 +283,8 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                     elif message_type == "cursor_move":
                         # Broadcast cursor position / selection to all OTHER users in the room.
                         # The sender already sees their own cursor natively so we exclude them.
+                        # language is forwarded so receivers can hide cursors from users who
+                        # are currently viewing a different language tab.
                         await manager.broadcast_to_room(
                             room_id,
                             {
@@ -292,6 +294,7 @@ async def websocket_endpoint(websocket: WebSocket, room_id: str):
                                 "color":      data.get("color"),
                                 "lineNumber": data.get("lineNumber"),
                                 "column":     data.get("column"),
+                                "language":   data.get("language"),
                                 "selection":  data.get("selection"),
                             },
                             exclude=websocket

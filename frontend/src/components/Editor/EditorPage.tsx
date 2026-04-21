@@ -115,6 +115,9 @@ const EditorPage = () => {
         color:     data.color,
         lineNumber: data.lineNumber,
         column:    data.column,
+        // language is included so the editor can hide cursors from users
+        // who are currently viewing a different language tab.
+        language:  data.language,
         selection: data.selection,
       });
     };
