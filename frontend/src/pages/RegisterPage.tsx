@@ -25,6 +25,10 @@ const RegisterPage = () => {
   // when the user arrived via a shared room link.
   const from = (location.state as { from?: Location })?.from;
   const isRoomInvite = from?.pathname?.startsWith('/editor/');
+  // Pull the optional inviter name from the shared link's query string
+  const invitedBy = isRoomInvite
+    ? new URLSearchParams((from as any)?.search ?? '').get('invitedBy')
+    : null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -66,7 +70,14 @@ const RegisterPage = () => {
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            <span>You've been invited to a collaborative session. Create an account to join the room.</span>
+            {invitedBy ? (
+              <span>
+                <strong>{invitedBy}</strong> invited you to a collaborative coding session.
+                Create an account to join the room.
+              </span>
+            ) : (
+              <span>You've been invited to a collaborative coding session. Create an account to join the room.</span>
+            )}
           </div>
         )}
 

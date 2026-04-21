@@ -3,18 +3,26 @@ import { useAuthStore } from '../../store/authStore';
 
 const ShareButton = () => {
   const [copied, setCopied] = useState(false);
-  const { isGuest } = useAuthStore();
+  const { isGuest, user } = useAuthStore();
 
   const handleCopy = async () => {
     if (isGuest) return; // disabled for guests
+
+    // Append the inviter's username so the login/register page can show
+    // a personalised "invited by X" banner to the recipient.
+    const base = window.location.href.split('?')[0]; // strip any existing params
+    const shareUrl = user?.username
+      ? `${base}?invitedBy=${encodeURIComponent(user.username)}`
+      : base;
+
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {
       // Fallback for browsers that block clipboard without HTTPS
       const input = document.createElement('input');
-      input.value = window.location.href;
+      input.value = shareUrl;
       document.body.appendChild(input);
       input.select();
       document.execCommand('copy');
