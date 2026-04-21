@@ -128,10 +128,11 @@ class WebSocketService {
     });
   }
 
-  // Send cursor position and optional selection to collaborators
+  // Send cursor position, language, and optional selection to collaborators
   sendCursorMove(data: {
     lineNumber: number;
     column: number;
+    language?: string;
     selection?: {
       startLineNumber: number;
       startColumn: number;

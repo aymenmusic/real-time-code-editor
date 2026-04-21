@@ -155,9 +155,13 @@ const CodeEditor = ({
     // Regenerate CSS classes for the current set of remote users
     injectCursorStyles(userCursors);
 
-    // Remove decorations + labels for users who are no longer present
+    // Remove decorations + labels for users who are no longer present OR
+    // who are currently on a different language than the local user.
     decorationsRef.current.forEach((ids, userId) => {
-      if (!userCursors[userId]) {
+      const cursor = userCursors[userId];
+      const onDifferentLanguage =
+        cursor?.language !== undefined && cursor.language !== storeLanguage;
+      if (!cursor || onDifferentLanguage) {
         ed.deltaDecorations(ids, []);
         decorationsRef.current.delete(userId);
         const lbl = labelsRef.current.get(userId);
@@ -165,8 +169,11 @@ const CodeEditor = ({
       }
     });
 
-    // Upsert decorations for each active remote cursor
+    // Upsert decorations for each active remote cursor that shares our language.
+    // If cursor.language is undefined (older client / no stamp yet) we still
+    // show the cursor so there is no regression for existing sessions.
     Object.values(userCursors).forEach(cursor => {
+      if (cursor.language !== undefined && cursor.language !== storeLanguage) return;
       const uid = sanitizeId(cursor.userId);
       const decorations: monaco.editor.IModelDeltaDecoration[] = [];
 
@@ -225,7 +232,7 @@ const CodeEditor = ({
       // Reposition (or create) the username label
       updateLabel(cursor);
     });
-  }, [userCursors, injectCursorStyles, updateLabel]);
+  }, [userCursors, storeLanguage, injectCursorStyles, updateLabel]);
 
   // ── Monaco editor mount ──────────────────────────────────────────────────────
   const handleEditorDidMount: OnMount = (editor, monaco) => {
@@ -294,6 +301,9 @@ const CodeEditor = ({
         websocketService.sendCursorMove({
           lineNumber: e.position.lineNumber,
           column:     e.position.column,
+          // Include the active language so peers can hide this cursor when
+          // they are viewing a different language.
+          language:   useEditorStore.getState().language,
           selection:  hasSelection && selection ? {
             startLineNumber: selection.startLineNumber,
             startColumn:     selection.startColumn,
