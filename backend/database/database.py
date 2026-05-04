@@ -8,23 +8,22 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get database URL from environment (Render provides this)
-# If DATABASE_URL is not set, construct from individual parameters (for local dev)
+# If DATABASE_URL is not set, use SQLite for local development (zero setup)
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if DATABASE_URL:
-    # Render provides DATABASE_URL
+    # Render/production provides DATABASE_URL (PostgreSQL)
     SQLALCHEMY_DATABASE_URL = DATABASE_URL
 else:
-    # Local development - construct from individual parameters
-    DB_USER = os.getenv("DB_USER", "code_editor_user")
-    DB_PASSWORD = os.getenv("DB_PASSWORD", "password123")
-    DB_HOST = os.getenv("DB_HOST", "localhost")
-    DB_PORT = os.getenv("DB_PORT", "5432")
-    DB_NAME = os.getenv("DB_NAME", "code_editor_db")
-    SQLALCHEMY_DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Local development - use SQLite (no PostgreSQL install needed)
+    SQLITE_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app.db")
+    SQLALCHEMY_DATABASE_URL = f"sqlite:///{SQLITE_PATH}"
+    print(f"📦 Using SQLite database at: {SQLITE_PATH}")
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL
+    SQLALCHEMY_DATABASE_URL,
+    # SQLite needs this for multi-threaded access (FastAPI uses threads)
+    connect_args={"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
