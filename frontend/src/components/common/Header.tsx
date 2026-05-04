@@ -75,6 +75,7 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
               <>
                 {isAuthenticated ? (
                   <>
+                    <Link to="/analytics" className="nav-link analytics-link">Analytics</Link>
                     <span className="nav-link username">{user?.username}</span>
                     <button onClick={handleLogout} className="nav-link logout-button">
                       Log Out
@@ -140,6 +141,9 @@ const Header = ({ showNavLinks = true, isEditorPage = false }: HeaderProps) => {
 
             {isAuthenticated ? (
               <>
+                <Link to="/analytics" className="mobile-menu-link" onClick={closeMenu}>
+                  Analytics
+                </Link>
                 <span className="mobile-menu-username">{user?.username}</span>
                 <button onClick={handleLogout} className="mobile-menu-logout">
                   Log Out

@@ -15,6 +15,7 @@ from typing import Optional
 
 from database.database import engine, Base
 from routers import auth
+from analytics.router import router as analytics_router
 from models import user
 from models.user import User
 from auth.utils import get_current_active_user, get_current_user_optional
@@ -91,6 +92,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(analytics_router)
 
 
 class CodeExecution(BaseModel):

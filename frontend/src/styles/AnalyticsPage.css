@@ -1,0 +1,307 @@
+/* ── Analytics Page ──────────────────────────────────────────────────────
+   Matches the existing app design system (CSS variables, dark mode, etc.)
+   ──────────────────────────────────────────────────────────────────────── */
+
+.analytics-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+.analytics-container {
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  flex: 1;
+}
+
+/* ── Hero ──────────────────────────────────────────────────────────────── */
+
+.analytics-hero {
+  text-align: center;
+  margin: 0.5rem 0 0;
+}
+
+.analytics-hero h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.analytics-subtitle {
+  font-size: 0.95rem;
+  color: var(--text-light);
+}
+
+/* ── Actions ───────────────────────────────────────────────────────────── */
+
+.analytics-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.analytics-refresh-btn {
+  padding: 0.5rem 1.25rem;
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  border-radius: 0.375rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.analytics-refresh-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.analytics-refresh-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── Error ─────────────────────────────────────────────────────────────── */
+
+.analytics-error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background-color: rgba(239, 68, 68, 0.1);
+  border: 1px solid var(--error-color);
+  color: var(--error-color);
+  font-size: 0.875rem;
+}
+
+.analytics-error-icon {
+  font-size: 1.1rem;
+}
+
+.analytics-retry-btn {
+  padding: 0.25rem 0.75rem;
+  border: 1px solid var(--error-color);
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--error-color);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.analytics-retry-btn:hover {
+  background-color: rgba(239, 68, 68, 0.15);
+}
+
+/* ── Loading ──────────────────────────────────────────────────────────────── */
+
+.analytics-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 3rem 0;
+  color: var(--text-light);
+}
+
+.analytics-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border-color);
+  border-top: 3px solid var(--primary-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Dashboard ─────────────────────────────────────────────────────────── */
+
+.analytics-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* KPI cards */
+.analytics-kpis {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.kpi-card {
+  background-color: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.kpi-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.kpi-value {
+  font-size: 2.25rem;
+  font-weight: 700;
+  color: var(--text-color);
+  line-height: 1.1;
+}
+
+.kpi-total .kpi-value { color: var(--primary-color); }
+.kpi-active .kpi-value { color: var(--success-color); }
+.kpi-inactive .kpi-value { color: var(--text-light); }
+
+/* ── Cards ─────────────────────────────────────────────────────────────── */
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.analytics-card {
+  background-color: var(--header-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+}
+
+.analytics-card h3 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+}
+
+/* ── Table ─────────────────────────────────────────────────────────────── */
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.analytics-table th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--text-light);
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.analytics-table td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.analytics-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-badge {
+  display: inline-block;
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--primary-color);
+  font-weight: 600;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  min-width: 24px;
+  text-align: center;
+}
+
+.analytics-empty {
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.85rem;
+  padding: 0.5rem 0;
+}
+
+/* ── Summary grid ───────────────────────────────────────────────────────── */
+
+.analytics-summary {
+  /* spans full width naturally */
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.summary-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .analytics-container {
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .analytics-hero h2 {
+    font-size: 1.5rem;
+  }
+
+  .analytics-kpis {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-row {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -4,6 +4,7 @@ import EditorPage from './components/Editor/EditorPage'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import AnalyticsPage from './pages/AnalyticsPage'
 import { useThemeStore } from './store/themeStore'
 import { useAuthStore } from './store/authStore'
 import { useEffect, useRef, useState } from 'react'
@@ -151,6 +152,16 @@ function App() {
               }
             />
             
+            {/* Analytics dashboard — authenticated only */}
+            <Route
+              path="/analytics"
+              element={
+                <RequireAuth>
+                  <AnalyticsPage />
+                </RequireAuth>
+              }
+            />
+
             {/* Catch-all route - redirect to landing page */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
